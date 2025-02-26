@@ -1,0 +1,35 @@
+{
+  "name": "attestor-contracts",
+  "version": "1.0.0",
+  "description": "reclaim decentralization contracts",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "generate": "hardhat typechain",
+    "test": "hardhat test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reclaimprotocol/attestor-contracts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/reclaimprotocol/attestor-contracts/issues"
+  },
+  "homepage": "https://github.com/reclaimprotocol/attestor-contracts#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.2.0",
+    "@types/chai": "^4.3.20",
+    "@types/mocha": "^10.0.10",
+    "chai": "^4.5.0",
+    "hardhat": "^2.22.19",
+    "mocha": "^11.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^5.2.0"
+  }
+}
