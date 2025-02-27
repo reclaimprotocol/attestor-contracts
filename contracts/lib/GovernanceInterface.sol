@@ -30,4 +30,10 @@ interface IGovernance {
      * @return True if slashing is enabled, false otherwise.
      */
     function slashingEnabled() external view returns (bool);
+
+    /**
+     * @dev Registers rewards to specified honest attestors based on their staked amounts.
+     * @param _attestorAddresses An array of addresses to reward.
+     */
+    function registerRewards(address[] memory _attestorAddresses) external;
 }

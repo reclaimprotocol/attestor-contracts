@@ -50,6 +50,11 @@ contract Governance is Ownable {
     mapping(address => uint256) public unstakeRequestBlocks;
 
     /**
+     * @dev Mapping from Attestor address to their pending rewards.
+     */
+    mapping(address => uint256) public pendingRewards;
+
+    /**
      * @dev Total staked amount.
      */
     uint256 public totalStaked;
@@ -141,7 +146,7 @@ contract Governance is Ownable {
     function setUnbondingPeriod(uint256 _unbondingPeriod) external onlyOwner {
         unbondingPeriod = _unbondingPeriod;
     }
-    
+
     /**
      * @dev Stakes native currency.
      */
@@ -210,6 +215,47 @@ contract Governance is Ownable {
         totalSlashedAmount += _amount;
     }
 
+    /**
+     * @dev Registers rewards to specified honest attestors based on their staked amounts.
+     * @param _attestorAddresses An array of addresses to reward.
+     */
+    function registerRewards(address[] memory _attestorAddresses) public onlyOwner {
+        require(totalStaked > 0, "No staked tokens to distribute rewards");
+        uint256 validAttestorCount = 0;
+
+        // Calculate total staked amount for provided attestors
+        uint256 totalStakedForProvidedAttestors = 0;
+        for (uint256 i = 0; i < _attestorAddresses.length; i++) {
+            if (stakedAmounts[_attestorAddresses[i]] > 0){
+                totalStakedForProvidedAttestors += stakedAmounts[_attestorAddresses[i]];
+                validAttestorCount++;
+            }
+        }
+        require(validAttestorCount > 0, "No valid attestors provided");
+        require(totalStakedForProvidedAttestors <= totalStaked, "Total staked for provided attestors exceeds total staked");
+
+        for (uint256 i = 0; i < _attestorAddresses.length; i++) {
+            address attestorAddress = _attestorAddresses[i];
+            uint256 attestorStake = stakedAmounts[attestorAddress];
+
+            if (attestorStake > 0) {
+                uint256 attestorReward = (verificationCost * attestorStake) / totalStakedForProvidedAttestors;
+                pendingRewards[attestorAddress] += attestorReward;
+            }
+        }
+    }
+
+    /**
+     * @dev Allows an attestor to claim their pending rewards.
+     */
+    function claimRewards() external {
+        uint256 reward = pendingRewards[msg.sender];
+        require(reward > 0, "No rewards to claim");
+
+        pendingRewards[msg.sender] = 0;
+        payable(msg.sender).transfer(reward);
+    }
+    
     /**
      * @dev Withdraws any contract balance to the owner.
      */

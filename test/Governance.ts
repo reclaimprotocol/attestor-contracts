@@ -7,11 +7,12 @@ describe("Governance", function () {
   let owner: any; 
   let addr1: any;
   let addr2: any;
+  let addr3: any;
   const minimumStake = ethers.parseEther("1");
   const unbondingPeriod = 10; // 10 blocks for testing
 
   beforeEach(async function () {
-    [owner, addr1, addr2] = await ethers.getSigners();
+    [owner, addr1, addr2, addr3] = await ethers.getSigners();
     const GovernanceFactory = await ethers.getContractFactory("Governance");
     governance = await GovernanceFactory.deploy(
       owner.address,
@@ -218,4 +219,81 @@ describe("Governance", function () {
     });
   });
 
+  describe("rewards", function(){
+    beforeEach(async function () {
+
+      await governance.setVerificationCost(ethers.parseEther("10"));
+  
+      await governance.addAttestors("addr1", addr1.address); 
+      await governance.addAttestors("addr2", addr2.address); 
+      await governance.addAttestors("addr3", addr3.address); 
+  
+      await governance.connect(addr1).stake({ value: ethers.parseEther("2") }); 
+      await governance.connect(addr2).stake({ value: ethers.parseEther("3") }); 
+      await governance.connect(addr3).stake({ value: ethers.parseEther("5") }); 
+    });
+
+    it("should register rewards correctly for specified attestors", async function () {
+      await governance.connect(owner).registerRewards([addr1.address, addr2.address]); 
+  
+      const addr1Rewards = await governance.pendingRewards(addr1.address); 
+      const addr2Rewards = await governance.pendingRewards(addr2.address); 
+      const addr3Rewards = await governance.pendingRewards(addr3.address); 
+  
+      expect(addr1Rewards).to.equal(ethers.parseEther("4")); // 2 / 5 * 10 = 4
+      expect(addr2Rewards).to.equal(ethers.parseEther("6")); // 3 / 5 * 10 = 6
+      expect(addr3Rewards).to.equal(ethers.parseEther("0"));
+    });
+
+    it("should allow attestors to claim rewards", async function () {
+      await governance.connect(owner).registerRewards([addr1.address]); 
+  
+      const initialBalance = await ethers.provider.getBalance(addr1.address);
+      await governance.connect(addr1).claimRewards(); 
+      const finalBalance = await ethers.provider.getBalance(addr1.address); 
+  
+      const addr1Rewards = await governance.pendingRewards(addr1.address); 
+      expect(addr1Rewards).to.equal(ethers.parseEther("0"));
+  
+      expect(finalBalance - initialBalance).to.be.closeTo(ethers.parseEther("10"), ethers.parseEther("0.01")); // Account for gas
+    });
+
+    it("should not allow claiming rewards if there are none", async function () {
+      await expect(governance.connect(addr1).claimRewards()).to.be.revertedWith("No rewards to claim"); 
+    });
+
+    it("should revert if no valid attestors are provided", async function () {
+      await expect(governance.connect(owner).registerRewards([])).to.be.revertedWith("No valid attestors provided");
+    });
+  
+    it("should handle only valid attestors in provided list", async function(){
+      await governance.connect(owner).registerRewards([addr1.address, owner.address, addr2.address]); 
+      expect(await governance.pendingRewards(addr1.address)).to.equal(ethers.parseEther("4")); 
+      expect(await governance.pendingRewards(addr2.address)).to.equal(ethers.parseEther("6")); 
+      expect(await governance.pendingRewards(owner.address)).to.equal(ethers.parseEther("0"));
+    });
+
+    it("should revert if total staked is zero during reward registration", async function () {
+      await governance.connect(addr1).requestUnstake(); 
+      for (let i = 0; i < unbondingPeriod; i++) {
+        await ethers.provider.send("evm_mine");
+      }
+      await governance.connect(addr1).unstake(); 
+  
+      await governance.connect(addr2).requestUnstake(); 
+      for (let i = 0; i < unbondingPeriod; i++) {
+        await ethers.provider.send("evm_mine");
+      }
+      await governance.connect(addr2).unstake(); 
+  
+      await governance.connect(addr3).requestUnstake(); 
+      for (let i = 0; i < unbondingPeriod; i++) {
+        await ethers.provider.send("evm_mine");
+      }
+      await governance.connect(addr3).unstake(); 
+  
+      await expect(governance.connect(owner).registerRewards([addr1.address])).to.be.revertedWith("No staked tokens to distribute rewards"); 
+    });
+
+  });
 });

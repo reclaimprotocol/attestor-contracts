@@ -195,6 +195,9 @@ contract ReclaimTask is Ownable {
             proof.signedClaim
         );
 
+        address[] memory rewardedAttestors = new address[](signedAttestors.length);
+        uint256 rewardIndex = 0;
+
         require(
             signedAttestors.length == expectedAttestors.length,
             "Incorrect number of signatures"
@@ -216,12 +219,16 @@ contract ReclaimTask is Ownable {
         for (uint256 i = 0; i < signedAttestors.length; i++) {
             for (uint256 j = 0; j < expectedAttestors.length; j++) {
                 if (signedAttestors[i] == expectedAttestors[j].addr) {
+                    
+                    rewardedAttestors[rewardIndex] = expectedAttestors[j].addr;
+                    rewardIndex += 1;
                     attestorThreshold += 1;
                     break;
                 }
             }
         }
 
+        IGovernance(governanceAddress).registerRewards(rewardedAttestors);
         if (attestorThreshold >= expectedAttestors.length / 2) {
             Verifications[currentTask] = true;
             return true;
