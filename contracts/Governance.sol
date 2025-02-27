@@ -28,12 +28,51 @@ contract Governance is Ownable {
      * @dev Indicates whether slashing is enabled.
      */
     bool public slashingEnabled;
-    
+
+    /**
+     * @dev The minimum stake required for Attestors.
+     */
+    uint256 public minimumStake;
+
+    /**
+     * @dev The unbonding period for unstaking.
+     */
+    uint256 public unbondingPeriod;
+
+    /**
+     * @dev Mapping from Attestor address to their staked amount.
+     */
+    mapping(address => uint256) public stakedAmounts;
+
+    /**
+     * @dev Mapping from Attestor address to their unstake request block.
+     */
+    mapping(address => uint256) public unstakeRequestBlocks;
+
+    /**
+     * @dev Total staked amount.
+     */
+    uint256 public totalStaked;
+
+    /**
+     * @dev Total amount slashed.
+     */
+    uint256 public totalSlashedAmount;
+
     /**
      * @dev Constructor that sets the initial owner of the contract.
      * @param initialOwner The address of the initial owner.
+     * @param _minimumStake The minimum stake amount.
+     * @param _unbondingPeriod The unbonding period.
      */
-    constructor(address initialOwner) Ownable(initialOwner) {}
+    constructor(
+        address initialOwner,
+        uint256 _minimumStake,
+        uint256 _unbondingPeriod
+    ) Ownable(initialOwner) {
+        minimumStake = _minimumStake;
+        unbondingPeriod = _unbondingPeriod;
+    }
 
     /**
      * @dev Adds a new Attestor to the contract.
@@ -85,6 +124,97 @@ contract Governance is Ownable {
      */
     function setSlashingEnabled(bool _slashingEnabled) external onlyOwner {
         slashingEnabled = _slashingEnabled;
+    }
+
+    /**
+     * @dev Sets the minimum stake.
+     * @param _minimumStake The new minimum stake.
+     */
+    function setMinimumStake(uint256 _minimumStake) external onlyOwner {
+        minimumStake = _minimumStake;
+    }
+
+    /**
+     * @dev Sets the unbonding period.
+     * @param _unbondingPeriod The new unbonding period.
+     */
+    function setUnbondingPeriod(uint256 _unbondingPeriod) external onlyOwner {
+        unbondingPeriod = _unbondingPeriod;
+    }
+    
+    /**
+     * @dev Stakes native currency.
+     */
+    function stake() public payable {
+        require(msg.value >= minimumStake, "Amount below minimum stake");
+
+        stakedAmounts[msg.sender] += msg.value;
+        totalStaked += msg.value;
+    }
+
+    /**
+     * @dev Requests unstaking of native currency.
+     */
+    function requestUnstake() public {
+        require(stakedAmounts[msg.sender] > 0, "No staked tokens");
+        require(
+            unstakeRequestBlocks[msg.sender] == 0,
+            "Unstake already requested"
+        );
+
+        unstakeRequestBlocks[msg.sender] = block.number;
+    }
+
+    /**
+     * @dev Unstakes native currency after the unbonding period.
+     */
+    function unstake() public {
+        require(stakedAmounts[msg.sender] > 0, "No staked tokens");
+        require(unstakeRequestBlocks[msg.sender] > 0, "Unstake not requested");
+        require(
+            block.number >= unstakeRequestBlocks[msg.sender] + unbondingPeriod,
+            "Unbonding period not passed"
+        );
+
+        uint256 staked = stakedAmounts[msg.sender];
+        uint256 remaining = calculateRemainingTokens(staked);
+
+        stakedAmounts[msg.sender] = 0;
+        unstakeRequestBlocks[msg.sender] = 0;
+        totalStaked -= staked;
+
+        payable(msg.sender).transfer(remaining);
+    }
+
+    /**
+     * @dev Calculates the remaining tokens after slashing.
+     * @param _stakedAmount The amount of tokens staked.
+     * @return The remaining tokens.
+     */
+    function calculateRemainingTokens(
+        uint256 _stakedAmount
+    ) internal view returns (uint256) {
+        if (totalStaked == 0) {
+            return 0;
+        }
+        uint256 remainingTotal = totalStaked - totalSlashedAmount;
+        return remainingTotal * _stakedAmount / totalStaked;
+    }
+
+    /**
+     * @dev Slashes a certain amount of tokens.
+     * @param _amount The amount of tokens to slash.
+     */
+    function slash(uint256 _amount) public onlyOwner {
+        require(_amount <= totalStaked, "Slash amount exceeds total staked");
+        totalSlashedAmount += _amount;
+    }
+
+    /**
+     * @dev Withdraws any contract balance to the owner.
+     */
+    function withdraw() public onlyOwner {
+        payable(owner()).transfer(address(this).balance);
     }
 
     /**

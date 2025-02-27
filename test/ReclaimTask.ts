@@ -12,6 +12,8 @@ describe("Reclaim", function () {
   let attestor1: any;
   let attestor2: any;
   let attestor3: any;
+  const minimumStake = ethers.parseEther("1");
+  const unbondingPeriod = 10;
 
   beforeEach(async function () {
     [owner, addr1, addr2, addr3, attestor1, attestor2, attestor3] =
@@ -21,7 +23,7 @@ describe("Reclaim", function () {
       "Governance",
       owner
     );
-    governance = await GovernanceFactory.deploy(owner.address);
+    governance = await GovernanceFactory.deploy(owner.address, minimumStake, unbondingPeriod);
 
     await governance.addAttestors("attestor1", attestor1.address);
     await governance.addAttestors("attestor2", attestor2.address);

@@ -7,11 +7,17 @@ describe("Governance", function () {
   let owner: any; 
   let addr1: any;
   let addr2: any;
+  const minimumStake = ethers.parseEther("1");
+  const unbondingPeriod = 10; // 10 blocks for testing
 
   beforeEach(async function () {
     [owner, addr1, addr2] = await ethers.getSigners();
     const GovernanceFactory = await ethers.getContractFactory("Governance");
-    governance = (await GovernanceFactory.deploy(owner.address)) as Governance;
+    governance = await GovernanceFactory.deploy(
+      owner.address,
+      minimumStake,
+      unbondingPeriod
+    ) as Governance;
   });
 
   describe("Attestors", function () {
@@ -48,6 +54,16 @@ describe("Governance", function () {
       expect(keys).to.deep.equal(["attestor1", "attestor2"]);
       expect(addresses).to.deep.equal([addr1.address, addr2.address]);
     });
+
+    it("Should maintain order in getAttestors after removal", async function(){
+      await governance.addAttestors("attestor1", addr1.address);
+      await governance.addAttestors("attestor2", addr2.address);
+      await governance.removeAttestor("attestor1");
+      const [keys, addresses] = await governance.getAttestors();
+      expect(keys[0]).to.equal("attestor2");
+      expect(addresses[0]).to.equal(addr2.address);
+    });
+
   });
 
   describe("Settings", function () {
@@ -91,4 +107,115 @@ describe("Governance", function () {
         .reverted;
     });
   });
+
+  describe("stake", function () {
+    it("Should allow Attestor to stake native currency", async function () {
+      await governance
+        .connect(addr1)
+        .stake({ value: minimumStake });
+      expect(await governance.stakedAmounts(addr1.address)).to.equal(
+        minimumStake
+      );
+      expect(await governance.totalStaked()).to.equal(minimumStake);
+    });
+
+    it("Should revert if stake amount is below minimum", async function () {
+      const smallStake = ethers.parseEther("0.5");
+      await expect(
+        governance.connect(addr1).stake({ value: smallStake })
+      ).to.be.revertedWith("Amount below minimum stake");
+    });
+  });
+
+  describe("requestUnstake", function () {
+    beforeEach(async function () {
+      await governance
+        .connect(addr1)
+        .stake({ value: minimumStake });
+    });
+
+    it("Should allow Attestor to request unstake", async function () {
+      await governance.connect(addr1).requestUnstake();
+      expect(await governance.unstakeRequestBlocks(addr1.address)).to.equal(
+        await ethers.provider.getBlockNumber()
+      );
+    });
+
+    it("Should revert if Attestor has no staked tokens", async function () {
+      await expect(governance.connect(addr2).requestUnstake()).to.be.revertedWith(
+        "No staked tokens"
+      );
+    });
+
+    it("Should revert if Attestor already requested unstake", async function () {
+      await governance.connect(addr1).requestUnstake();
+      await expect(governance.connect(addr1).requestUnstake()).to.be.revertedWith(
+        "Unstake already requested"
+      );
+    });
+  });
+
+  describe("unstake", function () {
+    beforeEach(async function () {
+      await governance
+        .connect(addr1)
+        .stake({ value: minimumStake });
+      await governance.connect(addr1).requestUnstake();
+    });
+
+    it("Should allow Attestor to unstake after unbonding period", async function () {
+      for (let i = 0; i < unbondingPeriod; i++) {
+        await ethers.provider.send("evm_mine");
+      }
+
+      const initialBalance = await ethers.provider.getBalance(addr1.address);
+      let tx = await governance.connect(addr1).unstake();
+      // @ts-ignore
+      const fee = tx.gasPrice * tx.gasLimit;
+      const finalBalance = await ethers.provider.getBalance(addr1.address);
+      expect(finalBalance - initialBalance + fee).to.be.gte(minimumStake);
+      expect(await governance.stakedAmounts(addr1.address)).to.equal(0);
+      expect(await governance.totalStaked()).to.equal(0);
+    });
+
+    it("Should revert if unbonding period is not passed", async function () {
+      await expect(governance.connect(addr1).unstake()).to.be.revertedWith(
+        "Unbonding period not passed"
+      );
+    });
+  });
+
+  describe("slash", function () {
+    it("Should allow owner to slash tokens", async function () {
+      await governance
+        .connect(addr1)
+        .stake({ value: minimumStake });
+      await governance.slash(ethers.parseEther("0.5"));
+      expect(await governance.totalSlashedAmount()).to.equal(
+        ethers.parseEther("0.5")
+      );
+    });
+
+    it("Should revert if slash amount exceeds total staked", async function () {
+      await expect(
+        governance.slash(ethers.parseEther("2"))
+      ).to.be.revertedWith("Slash amount exceeds total staked");
+    });
+  });
+
+  describe("withdraw", function(){
+    it("Should allow owner to withdraw all funds", async function(){
+        await governance.connect(addr1).stake({value:minimumStake});
+        const initialOwnerBalance = await ethers.provider.getBalance(owner.address);
+        const initialContractBalance = await ethers.provider.getBalance(governance.getAddress());
+        const tx = await governance.withdraw();
+        // @ts-ignore
+        const fee = tx.gasPrice * tx.gasLimit;
+        const finalOwnerBalance = await ethers.provider.getBalance(owner.address);
+        const finalContractBalance = await ethers.provider.getBalance(governance.getAddress());
+        expect(finalContractBalance).to.equal(0);
+        expect(finalOwnerBalance - initialOwnerBalance + fee).to.be.gte(initialContractBalance);
+    });
+  });
+
 });
