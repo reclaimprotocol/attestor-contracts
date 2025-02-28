@@ -6,7 +6,8 @@
   "scripts": {
     "compile": "hardhat compile",
     "generate": "hardhat typechain",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "format": "prettier --write ."
   },
   "repository": {
     "type": "git",
@@ -26,10 +27,10 @@
     "chai": "^4.5.0",
     "hardhat": "^2.22.19",
     "mocha": "^11.1.0",
+    "prettier": "^3.5.2",
+    "prettier-plugin-solidity": "^1.4.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   },
-  "dependencies": {
-    "@openzeppelin/contracts-upgradeable": "^5.2.0"
-  }
+  "dependencies": {}
 }

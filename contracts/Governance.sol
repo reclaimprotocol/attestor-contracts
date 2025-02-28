@@ -203,7 +203,7 @@ contract Governance is Ownable {
             return 0;
         }
         uint256 remainingTotal = totalStaked - totalSlashedAmount;
-        return remainingTotal * _stakedAmount / totalStaked;
+        return (remainingTotal * _stakedAmount) / totalStaked;
     }
 
     /**
@@ -219,27 +219,35 @@ contract Governance is Ownable {
      * @dev Registers rewards to specified honest attestors based on their staked amounts.
      * @param _attestorAddresses An array of addresses to reward.
      */
-    function registerRewards(address[] memory _attestorAddresses) public onlyOwner {
+    function registerRewards(
+        address[] memory _attestorAddresses
+    ) public onlyOwner {
         require(totalStaked > 0, "No staked tokens to distribute rewards");
         uint256 validAttestorCount = 0;
 
         // Calculate total staked amount for provided attestors
         uint256 totalStakedForProvidedAttestors = 0;
         for (uint256 i = 0; i < _attestorAddresses.length; i++) {
-            if (stakedAmounts[_attestorAddresses[i]] > 0){
-                totalStakedForProvidedAttestors += stakedAmounts[_attestorAddresses[i]];
+            if (stakedAmounts[_attestorAddresses[i]] > 0) {
+                totalStakedForProvidedAttestors += stakedAmounts[
+                    _attestorAddresses[i]
+                ];
                 validAttestorCount++;
             }
         }
         require(validAttestorCount > 0, "No valid attestors provided");
-        require(totalStakedForProvidedAttestors <= totalStaked, "Total staked for provided attestors exceeds total staked");
+        require(
+            totalStakedForProvidedAttestors <= totalStaked,
+            "Total staked for provided attestors exceeds total staked"
+        );
 
         for (uint256 i = 0; i < _attestorAddresses.length; i++) {
             address attestorAddress = _attestorAddresses[i];
             uint256 attestorStake = stakedAmounts[attestorAddress];
 
             if (attestorStake > 0) {
-                uint256 attestorReward = (verificationCost * attestorStake) / totalStakedForProvidedAttestors;
+                uint256 attestorReward = (verificationCost * attestorStake) /
+                    totalStakedForProvidedAttestors;
                 pendingRewards[attestorAddress] += attestorReward;
             }
         }
@@ -255,7 +263,7 @@ contract Governance is Ownable {
         pendingRewards[msg.sender] = 0;
         payable(msg.sender).transfer(reward);
     }
-    
+
     /**
      * @dev Withdraws any contract balance to the owner.
      */

@@ -1,6 +1,6 @@
 # Reclaim attestor task and governance contracts
 
-## Compile 
+## Compile
 
 Compile contracts:
 
@@ -21,5 +21,3 @@ Run tests:
 ```shell
 npm run test
 ```
-
-
