@@ -6,9 +6,6 @@ describe('Reclaim', function () {
   let reclaim: ReclaimTask
   let governance: Governance
   let owner: any
-  let addr1: any
-  let addr2: any
-  let addr3: any
   let attestor1: any
   let attestor2: any
   let attestor3: any
@@ -16,8 +13,7 @@ describe('Reclaim', function () {
   const unbondingPeriod = 10
 
   beforeEach(async function () {
-    ;[owner, addr1, addr2, addr3, attestor1, attestor2, attestor3] =
-      await ethers.getSigners()
+    ;[owner, attestor1, attestor2, attestor3] = await ethers.getSigners()
 
     const GovernanceFactory = await ethers.getContractFactory(
       'Governance',
@@ -78,33 +74,6 @@ describe('Reclaim', function () {
     })
   })
 
-  //   describe("Verification", function () {
-
-  //     it("Should verify a valid proof", async function () {
-  //         const seed = ethers.randomBytes(32);
-  //         const timestamp = Math.floor(Date.now() / 1000);
-  //         const [taskId, attestors] = await reclaim.createNewTaskRequest(seed, timestamp);
-
-  //         const claimInfo = { /* ... create a valid ClaimInfo object ... */ }; // Replace with actual ClaimInfo
-  //         const hashed = await Claims.hashClaimInfo(claimInfo);
-  //         const claim = { identifier: hashed };
-  //         const signatures = [];
-
-  //         //Attestors sign the claim
-  //         for (let i = 0; i < attestors.length; i++) {
-  //           const signed = await attestors[i].addr.signMessage(ethers.getBytes(hashed));
-  //           signatures.push(signed);
-  //         }
-
-  //         const signedClaim = { claim: claim, signatures: signatures };
-  //         const proof = { claimInfo: claimInfo, signedClaim: signedClaim };
-
-  //         const verificationResult = await reclaim.verifyProof(proof, taskId);
-  //         expect(verificationResult).to.be.true;
-  //         expect(await reclaim.Verifications(taskId)).to.be.true;
-  //       });
-  //  });
-
   describe('Settings', function () {
     it('Should set minimum attestors', async function () {
       await reclaim.setMinimumAttestors(3)
@@ -114,7 +83,8 @@ describe('Reclaim', function () {
 
   describe('Ownership', function () {
     it('Should prevent non-owners from setting minimum attestors', async function () {
-      await expect(reclaim.connect(addr1).setMinimumAttestors(3)).to.be.reverted
+      await expect(reclaim.connect(attestor1).setMinimumAttestors(3)).to.be
+        .reverted
     })
   })
 })
