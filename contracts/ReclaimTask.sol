@@ -120,36 +120,38 @@ contract ReclaimTask is Ownable {
 
     /**
      * @dev Gets the attestors for a claim.
-     * @param task The task number.
      * @param seed Random seed used for attestor selection.
      * @param timestamp Timestamp used for attestor selection.
      * @return Array of selected Attestors.
      */
     function fetchAttestorsForClaim(
-        uint32 task,
         bytes32 seed,
         uint32 timestamp
     ) public view returns (Attestor[] memory) {
-        Task memory taskData = fetchTask(task);
         bytes memory completeInput = abi.encodePacked(
             StringUtils.bytes2str(abi.encodePacked(seed)), // Convert seed to string
-            "\n",
-            StringUtils.uint2str(task),
-            "\n",
-            StringUtils.uint2str(taskData.minimumAttestorsForClaimCreation),
             "\n",
             StringUtils.uint2str(timestamp)
         );
         bytes memory completeHash = abi.encodePacked(keccak256(completeInput));
 
-        Attestor[] memory attestorsLeftList = taskData.attestors;
-        Attestor[] memory selectedAttestors = new Attestor[](
-            taskData.minimumAttestorsForClaimCreation
-        );
+        (string[] memory keys, address[] memory addresses) = IGovernance(
+            governanceAddress
+        ).getAttestors();
+
+        uint256 length = keys.length;
+        Attestor[] memory governanceAttestors = new Attestor[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            governanceAttestors[i] = Attestor(addresses[i], keys[i]);
+        }
+
+        Attestor[] memory attestorsLeftList = governanceAttestors;
+        Attestor[] memory selectedAttestors = new Attestor[](minimumAttestors);
         uint attestorsLeft = attestorsLeftList.length;
 
         uint byteOffset = 0;
-        for (uint32 i = 0; i < taskData.minimumAttestorsForClaimCreation; i++) {
+        for (uint32 i = 0; i < minimumAttestors; i++) {
             uint randomSeed = BytesUtils.bytesToUInt(completeHash, byteOffset);
             uint attestorIndex = randomSeed % attestorsLeft;
             selectedAttestors[i] = attestorsLeftList[attestorIndex];
@@ -229,14 +231,15 @@ contract ReclaimTask is Ownable {
             }
         }
 
-        IGovernance(governanceAddress).registerRewards(rewardedAttestors);
+        // IGovernance(governanceAddress).registerRewards(rewardedAttestors);
+
         if (attestorThreshold >= expectedAttestors.length / 2) {
             Verifications[currentTask] = true;
-            return true;
         } else {
             Verifications[currentTask] = false;
-            return false;
+            revert("Verification failed");
         }
+        return true;
     }
 
     /**
@@ -256,11 +259,7 @@ contract ReclaimTask is Ownable {
             governanceAttestors[i] = Attestor(addresses[i], keys[i]);
         }
 
-        Attestor[] memory attestors = fetchAttestorsForClaim(
-            currentTask,
-            seed,
-            timestamp
-        );
+        Attestor[] memory attestors = fetchAttestorsForClaim(seed, timestamp);
         addNewTask(attestors, minimumAttestors);
     }
 
