@@ -65,6 +65,11 @@ contract Governance is Ownable {
     uint256 public totalSlashedAmount;
 
     /**
+     * @dev The address of the contract allowed to call registerReward.
+     */
+    address public reclaimContractAddress;
+
+    /**
      * @dev Constructor that sets the initial owner of the contract.
      * @param initialOwner The address of the initial owner.
      * @param _minimumStake The minimum stake amount.
@@ -77,6 +82,27 @@ contract Governance is Ownable {
     ) Ownable(initialOwner) {
         minimumStake = _minimumStake;
         unbondingPeriod = _unbondingPeriod;
+    }
+
+    /**
+     * @dev Modifier to ensure only the reclaim contract can call the function.
+     */
+    modifier OnlyAuthorized() {
+        require(
+            msg.sender == reclaimContractAddress || msg.sender == owner(),
+            "Unauthorized caller"
+        );
+        _;
+    }
+
+    /**
+     * @dev Sets the address of the reclaim contract.
+     * @param _reclaimContractAddress The address of the reclaim contract.
+     */
+    function setReclaimContractAddress(
+        address _reclaimContractAddress
+    ) external onlyOwner {
+        reclaimContractAddress = _reclaimContractAddress;
     }
 
     /**
@@ -221,8 +247,10 @@ contract Governance is Ownable {
      */
     function registerRewards(
         address[] memory _attestorAddresses
-    ) public onlyOwner {
-        require(totalStaked > 0, "No staked tokens to distribute rewards");
+    ) public OnlyAuthorized {
+        if (totalStaked == 0) {
+            return;
+        }
         uint256 validAttestorCount = 0;
 
         // Calculate total staked amount for provided attestors

@@ -231,7 +231,7 @@ contract ReclaimTask is Ownable {
             }
         }
 
-        // IGovernance(governanceAddress).registerRewards(rewardedAttestors);
+        IGovernance(governanceAddress).registerRewards(rewardedAttestors);
 
         if (attestorThreshold >= expectedAttestors.length / 2) {
             Verifications[currentTask] = true;

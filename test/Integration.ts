@@ -36,6 +36,8 @@ describe('Integration', function () {
     await reclaim.setMinimumAttestors(3)
 
     await governance.setVerificationCost(ethers.parseEther('1.0'))
+
+    await governance.setReclaimContractAddress(reclaim.getAddress())
   })
 
   describe('Verification', function () {

@@ -304,7 +304,7 @@ describe('Governance', function () {
       )
     })
 
-    it('should revert if total staked is zero during reward registration', async function () {
+    it('should return if total staked is zero during reward registration', async function () {
       await governance.connect(attestor1).requestUnstake()
       for (let i = 0; i < unbondingPeriod; i++) {
         await ethers.provider.send('evm_mine')
@@ -325,7 +325,7 @@ describe('Governance', function () {
 
       await expect(
         governance.connect(owner).registerRewards([attestor1.address])
-      ).to.be.revertedWith('No staked tokens to distribute rewards')
+      ).to.be.fulfilled
     })
   })
 })
