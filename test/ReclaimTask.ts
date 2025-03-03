@@ -25,9 +25,9 @@ describe('Reclaim', function () {
       unbondingPeriod
     )
 
-    await governance.addAttestors('attestor1', attestor1.address)
-    await governance.addAttestors('attestor2', attestor2.address)
-    await governance.addAttestors('attestor3', attestor3.address)
+    await governance.addAttestor('attestor1', attestor1.address)
+    await governance.addAttestor('attestor2', attestor2.address)
+    await governance.addAttestor('attestor3', attestor3.address)
 
     const ReclaimFactory = await ethers.getContractFactory('ReclaimTask')
     reclaim = await ReclaimFactory.deploy(

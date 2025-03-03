@@ -51,7 +51,7 @@ describe('Integration', function () {
         const wallet = await createWallet()
         signatures[i] = await signClaim(onChainProof.signedClaim.claim, wallet)
 
-        await governance.addAttestors('attestor' + i, wallet.address)
+        await governance.addAttestor('attestor' + i, wallet.address)
       }
 
       const seed = ethers.randomBytes(32)

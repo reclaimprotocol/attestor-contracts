@@ -110,7 +110,7 @@ contract Governance is Ownable {
      * @param _key The unique key for the Attestor.
      * @param _address The address of the Attestor.
      */
-    function addAttestors(
+    function addAttestor(
         string memory _key,
         address _address
     ) external onlyOwner {

@@ -23,20 +23,20 @@ describe('Governance', function () {
 
   describe('Attestors', function () {
     it('Should add an attestor', async function () {
-      await governance.addAttestors('attestor1', attestor1.address)
+      await governance.addAttestor('attestor1', attestor1.address)
       const attestorAddress = await governance.getAttestor('attestor1')
       expect(attestorAddress).to.equal(attestor1.address)
     })
 
     it('Should revert if adding an existing attestor', async function () {
-      await governance.addAttestors('attestor1', attestor1.address)
+      await governance.addAttestor('attestor1', attestor1.address)
       await expect(
-        governance.addAttestors('attestor1', attestor2.address)
+        governance.addAttestor('attestor1', attestor2.address)
       ).to.be.revertedWith('Attestor already exists')
     })
 
     it('Should remove an attestor', async function () {
-      await governance.addAttestors('attestor1', attestor1.address)
+      await governance.addAttestor('attestor1', attestor1.address)
       await governance.removeAttestor('attestor1')
       const attestorAddress = await governance.getAttestor('attestor1')
       expect(attestorAddress).to.equal(ethers.ZeroAddress)
@@ -49,16 +49,16 @@ describe('Governance', function () {
     })
 
     it('Should get all attestors', async function () {
-      await governance.addAttestors('attestor1', attestor1.address)
-      await governance.addAttestors('attestor2', attestor2.address)
+      await governance.addAttestor('attestor1', attestor1.address)
+      await governance.addAttestor('attestor2', attestor2.address)
       const [keys, addresses] = await governance.getAttestors()
       expect(keys).to.deep.equal(['attestor1', 'attestor2'])
       expect(addresses).to.deep.equal([attestor1.address, attestor2.address])
     })
 
     it('Should maintain order in getAttestors after removal', async function () {
-      await governance.addAttestors('attestor1', attestor1.address)
-      await governance.addAttestors('attestor2', attestor2.address)
+      await governance.addAttestor('attestor1', attestor1.address)
+      await governance.addAttestor('attestor2', attestor2.address)
       await governance.removeAttestor('attestor1')
       const [keys, addresses] = await governance.getAttestors()
       expect(keys[0]).to.equal('attestor2')
@@ -96,7 +96,7 @@ describe('Governance', function () {
       await expect(
         governance
           .connect(attestor1)
-          .addAttestors('attestor1', attestor1.address)
+          .addAttestor('attestor1', attestor1.address)
       ).to.be.reverted
 
       await expect(governance.connect(attestor1).removeAttestor('attestor1')).to
@@ -224,9 +224,9 @@ describe('Governance', function () {
     beforeEach(async function () {
       await governance.setVerificationCost(ethers.parseEther('10'))
 
-      await governance.addAttestors('attestor1', attestor1.address)
-      await governance.addAttestors('attestor2', attestor2.address)
-      await governance.addAttestors('attestor3', attestor3.address)
+      await governance.addAttestor('attestor1', attestor1.address)
+      await governance.addAttestor('attestor2', attestor2.address)
+      await governance.addAttestor('attestor3', attestor3.address)
 
       await governance
         .connect(attestor1)
