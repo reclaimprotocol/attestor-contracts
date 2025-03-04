@@ -251,23 +251,6 @@ contract Governance is Ownable {
         if (totalStaked == 0) {
             return;
         }
-        uint256 validAttestorCount = 0;
-
-        // Calculate total staked amount for provided attestors
-        uint256 totalStakedForProvidedAttestors = 0;
-        for (uint256 i = 0; i < _attestorAddresses.length; i++) {
-            if (stakedAmounts[_attestorAddresses[i]] > 0) {
-                totalStakedForProvidedAttestors += stakedAmounts[
-                    _attestorAddresses[i]
-                ];
-                validAttestorCount++;
-            }
-        }
-        require(validAttestorCount > 0, "No valid attestors provided");
-        require(
-            totalStakedForProvidedAttestors <= totalStaked,
-            "Total staked for provided attestors exceeds total staked"
-        );
 
         for (uint256 i = 0; i < _attestorAddresses.length; i++) {
             address attestorAddress = _attestorAddresses[i];
@@ -275,7 +258,7 @@ contract Governance is Ownable {
 
             if (attestorStake > 0) {
                 uint256 attestorReward = (verificationCost * attestorStake) /
-                    totalStakedForProvidedAttestors;
+                    totalStaked;
                 pendingRewards[attestorAddress] += attestorReward;
             }
         }

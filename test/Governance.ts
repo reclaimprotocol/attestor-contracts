@@ -222,7 +222,7 @@ describe('Governance', function () {
 
   describe('rewards', function () {
     beforeEach(async function () {
-      await governance.setVerificationCost(ethers.parseEther('10'))
+      await governance.setVerificationCost(ethers.parseEther('5'))
 
       await governance.addAttestor('attestor1', attestor1.address)
       await governance.addAttestor('attestor2', attestor2.address)
@@ -233,10 +233,10 @@ describe('Governance', function () {
         .stake({ value: ethers.parseEther('2') })
       await governance
         .connect(attestor2)
-        .stake({ value: ethers.parseEther('3') })
+        .stake({ value: ethers.parseEther('4') })
       await governance
         .connect(attestor3)
-        .stake({ value: ethers.parseEther('5') })
+        .stake({ value: ethers.parseEther('4') })
     })
 
     it('should register rewards correctly for specified attestors', async function () {
@@ -254,8 +254,8 @@ describe('Governance', function () {
         attestor3.address
       )
 
-      expect(attestor1Rewards).to.equal(ethers.parseEther('4')) // 2 / 5 * 10 = 4
-      expect(attestor2Rewards).to.equal(ethers.parseEther('6')) // 3 / 5 * 10 = 6
+      expect(attestor1Rewards).to.equal(ethers.parseEther('1')) // 2 / 10 * 5 = 1
+      expect(attestor2Rewards).to.equal(ethers.parseEther('2')) // 4 / 10 * 5 = 2
       expect(attestor3Rewards).to.equal(ethers.parseEther('0'))
     })
 
@@ -272,7 +272,7 @@ describe('Governance', function () {
       expect(attestor1Rewards).to.equal(ethers.parseEther('0'))
 
       expect(finalBalance - initialBalance).to.be.closeTo(
-        ethers.parseEther('10'),
+        ethers.parseEther('1'),
         ethers.parseEther('0.01')
       ) // Account for gas
     })
@@ -281,27 +281,6 @@ describe('Governance', function () {
       await expect(
         governance.connect(attestor1).claimRewards()
       ).to.be.revertedWith('No rewards to claim')
-    })
-
-    it('should revert if no valid attestors are provided', async function () {
-      await expect(
-        governance.connect(owner).registerRewards([])
-      ).to.be.revertedWith('No valid attestors provided')
-    })
-
-    it('should handle only valid attestors in provided list', async function () {
-      await governance
-        .connect(owner)
-        .registerRewards([attestor1.address, owner.address, attestor2.address])
-      expect(await governance.pendingRewards(attestor1.address)).to.equal(
-        ethers.parseEther('4')
-      )
-      expect(await governance.pendingRewards(attestor2.address)).to.equal(
-        ethers.parseEther('6')
-      )
-      expect(await governance.pendingRewards(owner.address)).to.equal(
-        ethers.parseEther('0')
-      )
     })
 
     it('should return if total staked is zero during reward registration', async function () {
