@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import { ReclaimTask, Governance } from '../typechain-types'
 import { createWallet, PROOF, signClaim } from './utils'
-import { transformForOnchain, Proof } from '@reclaimprotocol/js-sdk'
+import { transformForOnchain } from '@reclaimprotocol/js-sdk'
 
 describe('Integration', function () {
   let reclaim: ReclaimTask
@@ -33,7 +33,7 @@ describe('Integration', function () {
       governance.getAddress()
     )
 
-    await reclaim.setMinimumAttestors(3)
+    await reclaim.setRequiredAttestors(4)
 
     await governance.setVerificationCost(ethers.parseEther('1.0'))
 
@@ -47,7 +47,10 @@ describe('Integration', function () {
 
       let signatures = []
 
-      for (let i = 0; i < 3; i++) {
+      signatures[0] = onChainProof.signedClaim.signatures[0]
+      await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
+
+      for (let i = 1; i < 4; i++) {
         const wallet = await createWallet()
         signatures[i] = await signClaim(onChainProof.signedClaim.claim, wallet)
 

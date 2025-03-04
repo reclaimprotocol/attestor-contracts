@@ -35,7 +35,7 @@ describe('Reclaim', function () {
       governance.getAddress()
     )
 
-    await reclaim.setMinimumAttestors(1)
+    await reclaim.setRequiredAttestors(1)
   })
 
   describe('Tasks', function () {
@@ -50,12 +50,9 @@ describe('Reclaim', function () {
       const fetchedTask = await reclaim.fetchTask(taskId)
       const attestors = fetchedTask.attestors
 
-      expect(attestors.length).to.equal(await reclaim.minimumAttestors())
+      expect(attestors.length).to.equal(await reclaim.requiredAttestors())
       expect(attestors.length).to.be.at.least(1) // Ensure at least 1 attestor is selected
       expect(fetchedTask.id).to.equal(taskId)
-      expect(fetchedTask.minimumAttestorsForClaimCreation).to.equal(
-        await reclaim.minimumAttestors()
-      )
     })
 
     it('Should fetch a task', async function () {
@@ -76,14 +73,14 @@ describe('Reclaim', function () {
 
   describe('Settings', function () {
     it('Should set minimum attestors', async function () {
-      await reclaim.setMinimumAttestors(3)
-      expect(await reclaim.minimumAttestors()).to.equal(3)
+      await reclaim.setRequiredAttestors(3)
+      expect(await reclaim.requiredAttestors()).to.equal(3)
     })
   })
 
   describe('Ownership', function () {
     it('Should prevent non-owners from setting minimum attestors', async function () {
-      await expect(reclaim.connect(attestor1).setMinimumAttestors(3)).to.be
+      await expect(reclaim.connect(attestor1).setRequiredAttestors(3)).to.be
         .reverted
     })
   })

@@ -34,14 +34,12 @@ contract ReclaimTask is Ownable {
      * @param timestampStart The timestamp when the task started.
      * @param timestampEnd The timestamp when the task ends.
      * @param attestors Array of Attestors for this task.
-     * @param minimumAttestorsForClaimCreation Minimum number of attestors required for claim creation.
      */
     struct Task {
         uint32 id;
         uint32 timestampStart;
         uint32 timestampEnd;
         Attestor[] attestors;
-        uint8 minimumAttestorsForClaimCreation;
     }
 
     /**
@@ -68,8 +66,8 @@ contract ReclaimTask is Ownable {
     /** @dev Current task number. */
     uint32 public currentTask;
 
-    /** @dev Minimum number of attestors required. */
-    uint8 public minimumAttestors;
+    /** @dev Number of attestors required. */
+    uint8 public requiredAttestors;
 
     /** @dev Address of the Governance contract. */
     address public governanceAddress;
@@ -88,7 +86,7 @@ contract ReclaimTask is Ownable {
     ) Ownable(initialOwner) {
         taskDurationS = 1 days;
         currentTask = 0;
-        minimumAttestors = 1;
+        requiredAttestors = 1;
         governanceAddress = _governanceAddress;
 
         (string[] memory keys, address[] memory addresses) = IGovernance(
@@ -101,7 +99,7 @@ contract ReclaimTask is Ownable {
         for (uint256 i = 0; i < length; i++) {
             governanceAttestors[i] = Attestor(addresses[i], keys[i]);
         }
-        addNewTask(governanceAttestors, minimumAttestors);
+        addNewTask(governanceAttestors);
     }
 
     /**
@@ -147,11 +145,11 @@ contract ReclaimTask is Ownable {
         }
 
         Attestor[] memory attestorsLeftList = governanceAttestors;
-        Attestor[] memory selectedAttestors = new Attestor[](minimumAttestors);
+        Attestor[] memory selectedAttestors = new Attestor[](requiredAttestors);
         uint attestorsLeft = attestorsLeftList.length;
 
         uint byteOffset = 0;
-        for (uint32 i = 0; i < minimumAttestors; i++) {
+        for (uint32 i = 0; i < requiredAttestors; i++) {
             uint randomSeed = BytesUtils.bytesToUInt(completeHash, byteOffset);
             uint attestorIndex = randomSeed % attestorsLeft;
             selectedAttestors[i] = attestorsLeftList[attestorIndex];
@@ -260,18 +258,14 @@ contract ReclaimTask is Ownable {
         }
 
         Attestor[] memory attestors = fetchAttestorsForClaim(seed, timestamp);
-        addNewTask(attestors, minimumAttestors);
+        addNewTask(attestors);
     }
 
     /**
      * @dev Adds a new task.
      * @param attestors Array of Attestors for the task.
-     * @param requisiteAttestorsForClaimCreate Minimum number of attestors required for claim creation.
      */
-    function addNewTask(
-        Attestor[] memory attestors,
-        uint8 requisiteAttestorsForClaimCreate
-    ) internal {
+    function addNewTask(Attestor[] memory attestors) internal {
         if (taskDurationS == 0) {
             taskDurationS = 1 days;
         }
@@ -284,8 +278,6 @@ contract ReclaimTask is Ownable {
         task.id = currentTask;
         task.timestampStart = uint32(block.timestamp);
         task.timestampEnd = uint32(block.timestamp + taskDurationS);
-        task
-            .minimumAttestorsForClaimCreation = requisiteAttestorsForClaimCreate;
 
         for (uint256 i = 0; i < attestors.length; i++) {
             task.attestors.push(attestors[i]);
@@ -297,7 +289,7 @@ contract ReclaimTask is Ownable {
     /**
      * @dev Sets the minimum attestors count.
      */
-    function setMinimumAttestors(uint8 _minimumAttestors) external onlyOwner {
-        minimumAttestors = _minimumAttestors;
+    function setRequiredAttestors(uint8 _requiredAttestors) external onlyOwner {
+        requiredAttestors = _requiredAttestors;
     }
 }
