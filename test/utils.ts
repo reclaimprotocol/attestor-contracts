@@ -56,3 +56,9 @@ export const PROOF = {
   ],
   publicData: null
 }
+
+export const FALSE_IDENTIFIER =
+  '0x937c69accba0809e876033ab5394b6b905104881a8a00f7ae0a6f47bf0e24e1e'
+
+export const FALSE_SIGNATURE =
+  '0x55bb3f5b4b48f5292fb7230f74d4cb5a67c2b0409f53997a1636942c36feed5a3311229e74b85a003515183c70f6b8350397fe290f09c7170dbca11eebfe74291c'

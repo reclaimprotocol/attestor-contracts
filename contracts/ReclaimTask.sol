@@ -55,7 +55,7 @@ contract ReclaimTask is Ownable {
     /**
      * @dev Mapping from task ids to their verification results.
      */
-    mapping(uint32 => bool) public Verifications;
+    mapping(uint32 => bool) public consensusReached;
 
     /** @dev Array of all tasks. */
     Task[] public tasks;
@@ -232,9 +232,9 @@ contract ReclaimTask is Ownable {
         IGovernance(governanceAddress).registerRewards(rewardedAttestors);
 
         if (attestorThreshold >= expectedAttestors.length / 2) {
-            Verifications[currentTask] = true;
+            consensusReached[currentTask] = true;
         } else {
-            Verifications[currentTask] = false;
+            consensusReached[currentTask] = false;
             revert("Verification failed");
         }
         return true;
