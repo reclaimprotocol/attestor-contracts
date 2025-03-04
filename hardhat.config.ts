@@ -4,6 +4,7 @@ dotenv.config()
 import { HardhatUserConfig } from 'hardhat/config'
 import '@nomicfoundation/hardhat-toolbox'
 const { PRIVATE_KEY } = process.env
+import './tasks'
 
 const config: HardhatUserConfig = {
   networks: {
