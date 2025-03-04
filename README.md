@@ -21,3 +21,11 @@ Run tests:
 ```shell
 npm run test
 ```
+
+## Deploy
+
+Run the `deploy` task:
+
+```shell
+npx hardhat deploy --network $YOUR_NETWORK
+```
