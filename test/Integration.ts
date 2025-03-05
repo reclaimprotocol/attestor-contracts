@@ -1,7 +1,13 @@
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import { ReclaimTask, Governance } from '../typechain-types'
-import { createWallet, FALSE_IDENTIFIER, PROOF, signClaim } from './utils'
+import {
+  createWallet,
+  FALSE_IDENTIFIER,
+  PROOF,
+  signClaim,
+  FALSE_SIGNATURES
+} from './utils'
 import { transformForOnchain } from '@reclaimprotocol/js-sdk'
 
 describe('Integration', function () {
@@ -74,8 +80,10 @@ describe('Integration', function () {
     })
 
     it('Should reject an invalid proof - duplicated signatures', async function () {
+      const proof = JSON.parse(JSON.stringify(PROOF))
+
       //@ts-ignore
-      const onChainProof = transformForOnchain(PROOF)
+      const onChainProof = transformForOnchain(proof)
 
       let signatures = []
 
@@ -109,7 +117,7 @@ describe('Integration', function () {
     })
 
     it('Should reject an invalid proof - false identifier', async function () {
-      let falseProof = PROOF
+      let falseProof = JSON.parse(JSON.stringify(PROOF))
 
       falseProof.claimData.identifier = FALSE_IDENTIFIER
 
@@ -145,8 +153,44 @@ describe('Integration', function () {
       ).to.be.revertedWith('Claim identifier mismatch')
     })
 
+    it('Should reject an invalid proof - failed consensus', async function () {
+      const proof = JSON.parse(JSON.stringify(PROOF))
+
+      //@ts-ignore
+      const onChainProof = transformForOnchain(proof)
+
+      let signatures: string[] = []
+
+      signatures[0] = onChainProof.signedClaim.signatures[0]
+      await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
+
+      for (let i = 1; i < 4; i++) {
+        const wallet = await createWallet()
+
+        signatures[i] = FALSE_SIGNATURES[i - 1]
+
+        await governance.addAttestor('attestor' + i, wallet.address)
+      }
+
+      const seed = ethers.randomBytes(32)
+      const timestamp = Math.floor(Date.now() / 1000)
+      await reclaim.createNewTaskRequest(seed, timestamp)
+
+      onChainProof.signedClaim.signatures = signatures
+
+      const verificationCost = await governance.verificationCost()
+
+      const taskId = await reclaim.currentTask()
+
+      await expect(
+        reclaim.verifyProof(onChainProof, taskId, {
+          value: verificationCost
+        })
+      ).to.be.revertedWith('Consensus failed')
+      expect(await reclaim.consensusReached(taskId)).to.be.false
+    })
+
     it('Should reject an underpriced proof', async function () {
-      PROOF.claimData.identifier = FALSE_IDENTIFIER
       //@ts-ignore
       const onChainProof = transformForOnchain(PROOF)
 

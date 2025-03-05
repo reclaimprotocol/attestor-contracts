@@ -235,7 +235,7 @@ contract ReclaimTask is Ownable {
             consensusReached[currentTask] = true;
         } else {
             consensusReached[currentTask] = false;
-            revert("Verification failed");
+            revert("Consensus failed");
         }
         return true;
     }
