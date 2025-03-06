@@ -1,1 +1,5 @@
 import './deploy'
+import './add-attestor'
+import './stake'
+import './request-unstake'
+import './unstake'
