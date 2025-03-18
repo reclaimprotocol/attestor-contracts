@@ -1,30 +1,28 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 
-const stake = async (amount: number, hre: HardhatRuntimeEnvironment) => {
+const getCurrentTask = async (hre: HardhatRuntimeEnvironment) => {
   const addresses = require('./addresses.json')
-  const governanceAddress = addresses.governance
+  const reclaimAddress = addresses.task
 
   const fs = require('fs')
   const ContractArtifact = JSON.parse(
     fs.readFileSync(
-      'artifacts/contracts/Governance.sol/Governance.json',
+      'artifacts/contracts/ReclaimTask.sol/ReclaimTask.json',
       'utf8'
     )
   )
 
   const contract = await hre.ethers.getContractAt(
     ContractArtifact.abi,
-    governanceAddress
+    reclaimAddress
   )
 
   try {
     //@ts-ignore
-    const result = await contract.stake({ value: amount })
-    console.log(result)
+    const result = await contract.currentTask()
+    console.log(`currentTask is ${result} !`)
   } catch (error) {
     console.error('Error calling contract:', error)
   }
-
-  console.log(`${amount} is staked!`)
 }
-export default stake
+export default getCurrentTask

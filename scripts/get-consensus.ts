@@ -1,30 +1,30 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 
-const stake = async (amount: number, hre: HardhatRuntimeEnvironment) => {
+const getConsensus = async (id: number, hre: HardhatRuntimeEnvironment) => {
   const addresses = require('./addresses.json')
-  const governanceAddress = addresses.governance
+  const reclaimAddress = addresses.task
 
   const fs = require('fs')
   const ContractArtifact = JSON.parse(
     fs.readFileSync(
-      'artifacts/contracts/Governance.sol/Governance.json',
+      'artifacts/contracts/ReclaimTask.sol/ReclaimTask.json',
       'utf8'
     )
   )
 
   const contract = await hre.ethers.getContractAt(
     ContractArtifact.abi,
-    governanceAddress
+    reclaimAddress
   )
 
   try {
     //@ts-ignore
-    const result = await contract.stake({ value: amount })
+    const result = await contract.consensusReached(id)
     console.log(result)
   } catch (error) {
     console.error('Error calling contract:', error)
   }
 
-  console.log(`${amount} is staked!`)
+  console.log(`Consensus for task ${id} is fetched!`)
 }
-export default stake
+export default getConsensus
