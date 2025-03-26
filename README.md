@@ -200,12 +200,6 @@ Create a task request
 npx hardhat create-task-request --network $YOUR_NETWORK
 ```
 
-Verify a proof
-
-```
-npx hardhat verify --id $YOUR_ID --network $YOUR_NETWORK
-```
-
 ## Deployments
 
 | Contract Name | Deployed Address                           | Explorer Link                                                                        |
