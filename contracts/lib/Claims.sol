@@ -30,39 +30,16 @@ library Claims {
     }
 
     /**
-     * Asserts that the claim is signed by the expected witnesses
-     */
-    function assertValidSignedClaim(
-        SignedClaim memory self,
-        address[] memory expectedWitnessAddresses
-    ) internal pure {
-        require(self.signatures.length > 0, "No signatures");
-        address[] memory signedWitnesses = recoverSignersOfSignedClaim(self);
-        for (uint256 i = 0; i < expectedWitnessAddresses.length; i++) {
-            bool found = false;
-            for (uint256 j = 0; j < signedWitnesses.length; j++) {
-                if (signedWitnesses[j] == expectedWitnessAddresses[i]) {
-                    found = true;
-                    break;
-                }
-            }
-            require(found, "Missing witness signature");
-        }
-    }
-
-    /**
      * @dev recovers the signer of the claim
      */
-    function recoverSignersOfSignedClaim(
+    function recoverSignerOfSignedClaim(
         SignedClaim memory self
-    ) internal pure returns (address[] memory) {
+    ) internal pure returns (address) {
         bytes memory serialised = serialise(self.claim);
-        address[] memory signers = new address[](self.signatures.length);
-        for (uint256 i = 0; i < self.signatures.length; i++) {
-            signers[i] = verifySignature(serialised, self.signatures[i]);
-        }
 
-        return signers;
+        address signer = verifySignature(serialised, self.signatures[0]);
+
+        return signer;
     }
 
     /**

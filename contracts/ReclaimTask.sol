@@ -75,6 +75,9 @@ contract ReclaimTask is Ownable {
     /** @dev Emitted when a new task is added. */
     event TaskAdded(Task task);
 
+    address public constant ZERO_ADDRESS =
+        0x0000000000000000000000000000000000000000;
+
     /**
      * @dev Constructor that sets the initial owner and governance address.
      * @param initialOwner The address of the initial owner.
@@ -169,41 +172,45 @@ contract ReclaimTask is Ownable {
 
     /**
      * @dev Verifies a claim proof.
-     * @param proof The Proof struct containing the claim information and signature.
+     * @param proofs Array of Proof struct containing the claim information and signature.
      * @param taskId The ID of the task.
      * @return True if the proof is valid, false otherwise.
      */
-    function verifyProof(
-        Proof memory proof,
+    function verifyProofs(
+        Proof[] memory proofs,
         uint32 taskId
     ) public payable returns (bool) {
         uint256 verificationCost = IGovernance(governanceAddress)
             .verificationCost();
         require(msg.value == verificationCost, "Verification underpriced");
-        require(proof.signedClaim.signatures.length > 0, "No signatures");
 
-        bytes32 hashed = Claims.hashClaimInfo(proof.claimInfo);
-        require(
-            proof.signedClaim.claim.identifier == hashed,
-            "Claim identifier mismatch"
-        );
+        address[] memory signedAttestors = new address[](proofs.length);
+
+        for (uint32 i = 0; i < proofs.length; i++) {
+            Proof memory proof = proofs[i];
+
+            bytes32 hashed = Claims.hashClaimInfo(proof.claimInfo);
+
+            if (
+                proof.signedClaim.signatures.length == 0 ||
+                proof.signedClaim.claim.identifier != hashed
+            ) {
+                signedAttestors[i] = ZERO_ADDRESS;
+                continue;
+            }
+
+            signedAttestors[i] = Claims.recoverSignerOfSignedClaim(
+                proof.signedClaim
+            );
+        }
 
         Task memory taskData = fetchTask(taskId);
         Attestor[] memory expectedAttestors = taskData.attestors;
-
-        address[] memory signedAttestors = Claims.recoverSignersOfSignedClaim(
-            proof.signedClaim
-        );
 
         address[] memory rewardedAttestors = new address[](
             signedAttestors.length
         );
         uint256 rewardIndex = 0;
-
-        require(
-            signedAttestors.length == expectedAttestors.length,
-            "Incorrect number of signatures"
-        );
 
         // Check for duplicate attestor signatures
         for (uint256 i = 0; i < signedAttestors.length; i++) {

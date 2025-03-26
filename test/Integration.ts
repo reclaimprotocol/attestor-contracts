@@ -47,18 +47,25 @@ describe('Integration', function () {
       await governance.setReclaimContractAddress(reclaim.getAddress())
     })
 
-    it('Should verify a valid proof', async function () {
+    it('Should verify valid proofs', async function () {
       //@ts-ignore
       const onChainProof = transformForOnchain(PROOF)
 
+      let proofs = []
       let signatures = []
 
+      proofs[0] = onChainProof
       signatures[0] = onChainProof.signedClaim.signatures[0]
       await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
 
       for (let i = 1; i < 4; i++) {
+        proofs[i] = JSON.parse(JSON.stringify(onChainProof))
+
         const wallet = await createWallet()
-        signatures[i] = await signClaim(onChainProof.signedClaim.claim, wallet)
+        proofs[i].signedClaim.signatures[0] = await signClaim(
+          onChainProof.signedClaim.claim,
+          wallet
+        )
 
         await governance.addAttestor('attestor' + i, wallet.address)
       }
@@ -67,71 +74,72 @@ describe('Integration', function () {
       const timestamp = Math.floor(Date.now() / 1000)
       await reclaim.createNewTaskRequest(seed, timestamp)
 
-      onChainProof.signedClaim.signatures = signatures
-
       const verificationCost = await governance.verificationCost()
 
       const taskId = await reclaim.currentTask()
 
-      await reclaim.verifyProof(onChainProof, taskId, {
+      await reclaim.verifyProofs(proofs, taskId, {
         value: verificationCost
       })
       expect(await reclaim.consensusReached(taskId)).to.be.true
     })
 
-    it('Should reject an invalid proof - duplicated signatures', async function () {
-      const proof = JSON.parse(JSON.stringify(PROOF))
-
+    it('Should reject invalid proofs - duplicated signatures', async function () {
       //@ts-ignore
-      const onChainProof = transformForOnchain(proof)
+      const onChainProof = transformForOnchain(PROOF)
 
+      let proofs = []
       let signatures = []
 
+      proofs[0] = onChainProof
       signatures[0] = onChainProof.signedClaim.signatures[0]
       await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
 
       for (let i = 1; i < 4; i++) {
+        proofs[i] = JSON.parse(JSON.stringify(onChainProof))
+
         const wallet = await createWallet()
-        signatures[i] = await signClaim(onChainProof.signedClaim.claim, wallet)
+        proofs[i].signedClaim.signatures[0] = await signClaim(
+          onChainProof.signedClaim.claim,
+          wallet
+        )
 
         await governance.addAttestor('attestor' + i, wallet.address)
       }
 
-      signatures[2] = signatures[3]
+      proofs[2].signedClaim.signatures[0] = proofs[3].signedClaim.signatures[0]
 
       const seed = ethers.randomBytes(32)
       const timestamp = Math.floor(Date.now() / 1000)
       await reclaim.createNewTaskRequest(seed, timestamp)
-
-      onChainProof.signedClaim.signatures = signatures
 
       const verificationCost = await governance.verificationCost()
 
       const taskId = await reclaim.currentTask()
 
       await expect(
-        reclaim.verifyProof(onChainProof, taskId, {
+        reclaim.verifyProofs(proofs, taskId, {
           value: verificationCost
         })
       ).to.be.revertedWith('Duplicate signatures found')
     })
 
-    it('Should reject an invalid proof - false identifier', async function () {
-      let falseProof = JSON.parse(JSON.stringify(PROOF))
-
-      falseProof.claimData.identifier = FALSE_IDENTIFIER
-
+    it('Should reject an invalid proof - failed consensus', async function () {
       //@ts-ignore
-      const onChainProof = transformForOnchain(falseProof)
+      const onChainProof = transformForOnchain(PROOF)
 
+      let proofs = []
       let signatures = []
 
+      proofs[0] = onChainProof
       signatures[0] = onChainProof.signedClaim.signatures[0]
       await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
 
       for (let i = 1; i < 4; i++) {
+        proofs[i] = JSON.parse(JSON.stringify(onChainProof))
+
         const wallet = await createWallet()
-        signatures[i] = await signClaim(onChainProof.signedClaim.claim, wallet)
+        proofs[i].signedClaim.signatures[0] = FALSE_SIGNATURES[i - 1]
 
         await governance.addAttestor('attestor' + i, wallet.address)
       }
@@ -140,50 +148,12 @@ describe('Integration', function () {
       const timestamp = Math.floor(Date.now() / 1000)
       await reclaim.createNewTaskRequest(seed, timestamp)
 
-      onChainProof.signedClaim.signatures = signatures
-
       const verificationCost = await governance.verificationCost()
 
       const taskId = await reclaim.currentTask()
 
       await expect(
-        reclaim.verifyProof(onChainProof, taskId, {
-          value: verificationCost
-        })
-      ).to.be.revertedWith('Claim identifier mismatch')
-    })
-
-    it('Should reject an invalid proof - failed consensus', async function () {
-      const proof = JSON.parse(JSON.stringify(PROOF))
-
-      //@ts-ignore
-      const onChainProof = transformForOnchain(proof)
-
-      let signatures: string[] = []
-
-      signatures[0] = onChainProof.signedClaim.signatures[0]
-      await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
-
-      for (let i = 1; i < 4; i++) {
-        const wallet = await createWallet()
-
-        signatures[i] = FALSE_SIGNATURES[i - 1]
-
-        await governance.addAttestor('attestor' + i, wallet.address)
-      }
-
-      const seed = ethers.randomBytes(32)
-      const timestamp = Math.floor(Date.now() / 1000)
-      await reclaim.createNewTaskRequest(seed, timestamp)
-
-      onChainProof.signedClaim.signatures = signatures
-
-      const verificationCost = await governance.verificationCost()
-
-      const taskId = await reclaim.currentTask()
-
-      await expect(
-        reclaim.verifyProof(onChainProof, taskId, {
+        reclaim.verifyProofs(proofs, taskId, {
           value: verificationCost
         })
       ).to.be.revertedWith('Consensus failed')
@@ -194,14 +164,21 @@ describe('Integration', function () {
       //@ts-ignore
       const onChainProof = transformForOnchain(PROOF)
 
+      let proofs = []
       let signatures = []
 
+      proofs[0] = onChainProof
       signatures[0] = onChainProof.signedClaim.signatures[0]
       await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
 
       for (let i = 1; i < 4; i++) {
+        proofs[i] = JSON.parse(JSON.stringify(onChainProof))
+
         const wallet = await createWallet()
-        signatures[i] = await signClaim(onChainProof.signedClaim.claim, wallet)
+        proofs[i].signedClaim.signatures[0] = await signClaim(
+          onChainProof.signedClaim.claim,
+          wallet
+        )
 
         await governance.addAttestor('attestor' + i, wallet.address)
       }
@@ -210,12 +187,10 @@ describe('Integration', function () {
       const timestamp = Math.floor(Date.now() / 1000)
       await reclaim.createNewTaskRequest(seed, timestamp)
 
-      onChainProof.signedClaim.signatures = signatures
-
       const taskId = await reclaim.currentTask()
 
       await expect(
-        reclaim.verifyProof(onChainProof, taskId, {
+        reclaim.verifyProofs(proofs, taskId, {
           value: ethers.parseEther('1.0')
         })
       ).to.be.revertedWith('Verification underpriced')
@@ -260,11 +235,13 @@ describe('Integration', function () {
       //@ts-ignore
       const onChainProof = transformForOnchain(PROOF)
 
+      let proofs = []
       let signatures = []
       let addresses = []
       let stakes = ['10', '20', '30', '40']
 
       for (let i = 0; i < 4; i++) {
+        proofs[i] = JSON.parse(JSON.stringify(onChainProof))
         const wallet = await createWallet(100)
         addresses[i] = wallet.address
 
@@ -272,7 +249,10 @@ describe('Integration', function () {
           .connect(wallet)
           .stake({ value: ethers.parseEther(stakes[i]) })
 
-        signatures[i] = await signClaim(onChainProof.signedClaim.claim, wallet)
+        proofs[i].signedClaim.signatures[0] = await signClaim(
+          onChainProof.signedClaim.claim,
+          wallet
+        )
 
         await governance.addAttestor('attestor' + i, wallet.address)
       }
@@ -281,13 +261,11 @@ describe('Integration', function () {
       const timestamp = Math.floor(Date.now() / 1000)
       await reclaim.createNewTaskRequest(seed, timestamp)
 
-      onChainProof.signedClaim.signatures = signatures
-
       const verificationCost = await governance.verificationCost()
 
       const taskId = await reclaim.currentTask()
 
-      await reclaim.verifyProof(onChainProof, taskId, {
+      await reclaim.verifyProofs(proofs, taskId, {
         value: verificationCost
       })
       expect(await reclaim.consensusReached(taskId)).to.be.true
