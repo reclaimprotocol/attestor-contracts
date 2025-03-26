@@ -101,7 +101,7 @@ npx hardhat get-unbonding-period --network $YOUR_NETWORK
 Set required attestors count
 
 ```shell
-npx hardhat set-required-attestors--amount $YOUR_AMOUNT --network $YOUR_NETWORK
+npx hardhat set-required-attestors --amount $YOUR_AMOUNT --network $YOUR_NETWORK
 ```
 
 Get required attestors count
@@ -210,5 +210,5 @@ npx hardhat verify --id $YOUR_ID --network $YOUR_NETWORK
 
 | Contract Name | Deployed Address                           | Explorer Link                                                                        |
 | :------------ | :----------------------------------------- | :----------------------------------------------------------------------------------- |
-| Governance    | 0x0E2CF8810B11c2875246d634f030897e77491680 | https://testnet-scan.mechain.tech/address/0x0E2CF8810B11c2875246d634f030897e77491680 |
-| ReclaimTask   | 0x88cEd91D4966D82912774B9fdf9ca4E065881a91 | https://testnet-scan.mechain.tech/address/0x88cEd91D4966D82912774B9fdf9ca4E065881a91 |
+| Governance    | 0xCc08210D8f15323104A629a925E4cc59D0fa2Fe1 | https://testnet-scan.mechain.tech/address/0xCc08210D8f15323104A629a925E4cc59D0fa2Fe1 |
+| ReclaimTask   | 0xd6534f52CEB3d0139b915bc0C3278a94687fA5C7 | https://testnet-scan.mechain.tech/address/0xd6534f52CEB3d0139b915bc0C3278a94687fA5C7 |

@@ -1,0 +1,17 @@
+{
+  "name": "attestor-create-claim",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@reclaimprotocol/attestor-core": "github:reclaimprotocol/attestor-core",
+    "@reclaimprotocol/js-sdk": "^2.2.2",
+    "ethers": "5.7"
+  }
+}

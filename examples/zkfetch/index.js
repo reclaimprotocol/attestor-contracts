@@ -1,3 +1,15 @@
+/*
+This example is for an outdated deployment, we keep it merely for demonstration purposes.
+
+The governance contract holds one attestor, Reclaim's official, hence no decentralized task management.
+
+Reclaim's Attestor:
+{
+host: 'wss://attestor.reclaimprotocol.org/ws',
+address: '0x244897572368Eadf65bfBc5aec98D8e5443a9072'
+}
+*/
+
 const { ReclaimClient } = require('@reclaimprotocol/zk-fetch')
 const { transformForOnchain } = require('@reclaimprotocol/js-sdk')
 const { ethers } = require('ethers')

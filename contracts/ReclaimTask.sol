@@ -252,7 +252,10 @@ contract ReclaimTask is Ownable {
      * @param seed Random seed.
      * @param timestamp Timestamp.
      */
-    function createNewTaskRequest(bytes32 seed, uint32 timestamp) public {
+    function createNewTaskRequest(
+        bytes32 seed,
+        uint32 timestamp
+    ) public returns (uint32, Attestor[] memory) {
         (string[] memory keys, address[] memory addresses) = IGovernance(
             governanceAddress
         ).getAttestors();
@@ -266,6 +269,8 @@ contract ReclaimTask is Ownable {
 
         Attestor[] memory attestors = fetchAttestorsForClaim(seed, timestamp);
         addNewTask(attestors);
+
+        return (currentTask, attestors);
     }
 
     /**
