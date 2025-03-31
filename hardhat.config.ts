@@ -9,10 +9,6 @@ import './tasks'
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {},
-    'mechain-testnet': {
-      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
-      url: 'https://testnet-rpc.mechain.tech'
-    },
     sepolia: {
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
       url: 'https://ethereum-sepolia-rpc.publicnode.com'

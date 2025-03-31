@@ -200,9 +200,3 @@ Create a task request
 npx hardhat create-task-request --network $YOUR_NETWORK
 ```
 
-## Deployments
-
-| Contract Name | Deployed Address                           | Explorer Link                                                                        |
-| :------------ | :----------------------------------------- | :----------------------------------------------------------------------------------- |
-| Governance    | 0xCc08210D8f15323104A629a925E4cc59D0fa2Fe1 | https://testnet-scan.mechain.tech/address/0xCc08210D8f15323104A629a925E4cc59D0fa2Fe1 |
-| ReclaimTask   | 0xd6534f52CEB3d0139b915bc0C3278a94687fA5C7 | https://testnet-scan.mechain.tech/address/0xd6534f52CEB3d0139b915bc0C3278a94687fA5C7 |
