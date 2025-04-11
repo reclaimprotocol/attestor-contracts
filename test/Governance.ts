@@ -72,14 +72,6 @@ describe('Governance', function () {
       await governance.setVerificationCost(cost)
       expect(await governance.verificationCost()).to.equal(cost)
     })
-
-    it('Should set slashing enabled', async function () {
-      await governance.setSlashingEnabled(true)
-      expect(await governance.slashingEnabled()).to.equal(true)
-
-      await governance.setSlashingEnabled(false)
-      expect(await governance.slashingEnabled()).to.equal(false)
-    })
   })
 
   describe('Ownership', function () {
@@ -103,9 +95,6 @@ describe('Governance', function () {
         .be.reverted
 
       await expect(governance.connect(attestor1).setVerificationCost(100)).to.be
-        .reverted
-
-      await expect(governance.connect(attestor1).setSlashingEnabled(true)).to.be
         .reverted
     })
   })

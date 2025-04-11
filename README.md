@@ -122,18 +122,6 @@ Get verification cost
 npx hardhat get-verification-cost --network $YOUR_NETWORK
 ```
 
-Set slashing flag
-
-```shell
-npx hardhat set-slashing-enabled --flag $YOUR_BOOLEAN_FLAG --network $YOUR_NETWORK
-```
-
-Get slashing flag
-
-```shell
-npx hardhat get-slashing-enabled --network $YOUR_NETWORK
-```
-
 Slash
 
 ```shell
@@ -199,4 +187,3 @@ Create a task request
 ```shell
 npx hardhat create-task-request --network $YOUR_NETWORK
 ```
-
