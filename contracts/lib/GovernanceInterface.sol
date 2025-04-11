@@ -30,4 +30,24 @@ interface IGovernance {
      * @param _attestorAddresses An array of addresses to reward.
      */
     function registerRewards(address[] memory _attestorAddresses) external;
+
+    /**
+     * @dev Returns the staked amount for a given attestor address.
+     * @param _attestor The address of the attestor.
+     * @return The staked amount of the attestor.
+     */
+    function stakedAmounts(address _attestor) external view returns (uint256);
+
+    /**
+     * @dev Returns the fraudulent proof penalty factor.
+     * @return The fraudulent proof penalty factor (as a fraction of 100).
+     */
+    function getFradulentProofPenalityFactor() external view returns (uint256);
+
+    /**
+     * @dev Slashes a certain amount of tokens from an attestor's stake.
+     * @param _attestor The address of the attestor to slash.
+     * @param _amount The amount of tokens to slash.
+     */
+    function slashAttestor(address _attestor, uint256 _amount) external;
 }

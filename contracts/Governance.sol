@@ -65,10 +65,16 @@ contract Governance is Ownable {
     address public reclaimContractAddress;
 
     /**
+     * @dev The penalty applied to an attestor's stake for submitting a fraudulent proof (value < 1, represented as a fraction of 100).
+     * For example, a value of 10 means a 10% penalty (reducing the stake to 90% of the original).
+     */
+    uint256 public fradulentProofPenalityFactor;
+
+    /**
      * @dev Constructor that sets the initial owner of the contract.
      * @param initialOwner The address of the initial owner.
      * @param _minimumStake The minimum stake amount.
-     * @param _unbondingPeriod The unbonding period.
+     * @param _unbondingPeriod The unbonding period in blocks.
      */
     constructor(
         address initialOwner,
@@ -77,6 +83,7 @@ contract Governance is Ownable {
     ) Ownable(initialOwner) {
         minimumStake = _minimumStake;
         unbondingPeriod = _unbondingPeriod;
+        fradulentProofPenalityFactor = 5;
     }
 
     /**
@@ -154,10 +161,31 @@ contract Governance is Ownable {
 
     /**
      * @dev Sets the unbonding period.
-     * @param _unbondingPeriod The new unbonding period.
+     * @param _unbondingPeriod The new unbonding period in blocks.
      */
     function setUnbondingPeriod(uint256 _unbondingPeriod) external onlyOwner {
         unbondingPeriod = _unbondingPeriod;
+    }
+
+    /**
+     * @dev Sets the fraudulent proof penalty factor.
+     * @param _fradulentProofPenalityFactor The new fraudulent proof penalty factor (e.g., 10 for 10%).
+     */
+    function setFradulentProofPenalityFactor(
+        uint256 _fradulentProofPenalityFactor
+    ) external onlyOwner {
+        require(
+            _fradulentProofPenalityFactor < 100,
+            "Penalty factor must be less than 100"
+        );
+        fradulentProofPenalityFactor = _fradulentProofPenalityFactor;
+    }
+
+    /**
+     * @dev Returns the current fraudulent proof penalty (as a fraction).
+     */
+    function getFradulentProofPenalityFactor() public view returns (uint256) {
+        return fradulentProofPenalityFactor;
     }
 
     /**
@@ -165,7 +193,6 @@ contract Governance is Ownable {
      */
     function stake() public payable {
         require(msg.value >= minimumStake, "Amount below minimum stake");
-
         stakedAmounts[msg.sender] += msg.value;
         totalStaked += msg.value;
     }
@@ -179,7 +206,6 @@ contract Governance is Ownable {
             unstakeRequestBlocks[msg.sender] == 0,
             "Unstake already requested"
         );
-
         unstakeRequestBlocks[msg.sender] = block.number;
     }
 
@@ -195,28 +221,29 @@ contract Governance is Ownable {
         );
 
         uint256 staked = stakedAmounts[msg.sender];
-        uint256 remaining = calculateRemainingTokens(staked);
-
         stakedAmounts[msg.sender] = 0;
         unstakeRequestBlocks[msg.sender] = 0;
         totalStaked -= staked;
 
-        payable(msg.sender).transfer(remaining);
+        payable(msg.sender).transfer(staked);
     }
 
     /**
-     * @dev Calculates the remaining tokens after slashing.
-     * @param _stakedAmount The amount of tokens staked.
-     * @return The remaining tokens.
+     * @dev Slashes a certain amount of tokens from an attestor's stake.
+     * @param _attestor The address of the attestor to slash.
+     * @param _amount The amount of tokens to slash.
      */
-    function calculateRemainingTokens(
-        uint256 _stakedAmount
-    ) internal view returns (uint256) {
-        if (totalStaked == 0) {
-            return 0;
-        }
-        uint256 remainingTotal = totalStaked - totalSlashedAmount;
-        return (remainingTotal * _stakedAmount) / totalStaked;
+    function slashAttestor(
+        address _attestor,
+        uint256 _amount
+    ) external OnlyAuthorized {
+        require(
+            stakedAmounts[_attestor] >= _amount,
+            "Slash amount exceeds attestor's stake"
+        );
+        stakedAmounts[_attestor] -= _amount;
+        totalStaked -= _amount;
+        totalSlashedAmount += _amount;
     }
 
     /**
@@ -257,7 +284,6 @@ contract Governance is Ownable {
     function claimRewards() external {
         uint256 reward = pendingRewards[msg.sender];
         require(reward > 0, "No rewards to claim");
-
         pendingRewards[msg.sender] = 0;
         payable(msg.sender).transfer(reward);
     }

@@ -74,6 +74,8 @@ contract ReclaimTask is Ownable {
 
     /** @dev Emitted when a new task is added. */
     event TaskAdded(Task task);
+    /** @dev Emitted when a fraudulent proof is detected and an attestor is slashed. */
+    event AttestorSlashed(address attestor, uint256 slashedAmount);
 
     address public constant ZERO_ADDRESS =
         0x0000000000000000000000000000000000000000;
@@ -172,9 +174,9 @@ contract ReclaimTask is Ownable {
 
     /**
      * @dev Verifies a claim proof.
-     * @param proofs Array of Proof struct containing the claim information and signature.
+     * @param proofs Array of Proof struct.
      * @param taskId The ID of the task.
-     * @return True if the proof is valid, false otherwise.
+     * @return True if proofs are valid, false otherwise.
      */
     function verifyProofs(
         Proof[] memory proofs,
@@ -210,11 +212,14 @@ contract ReclaimTask is Ownable {
         address[] memory rewardedAttestors = new address[](
             signedAttestors.length
         );
-        uint256 rewardIndex = 0;
-
+        address[] memory slashedAttestors = new address[](
+            signedAttestors.length
+        );
+        uint32 rewardIndex = 0;
+        uint32 slashIndex = 0;
         // Check for duplicate attestor signatures
-        for (uint256 i = 0; i < signedAttestors.length; i++) {
-            for (uint256 j = i + 1; j < signedAttestors.length; j++) {
+        for (uint32 i = 0; i < signedAttestors.length; i++) {
+            for (uint32 j = i + 1; j < signedAttestors.length; j++) {
                 // Optimize: Start inner loop from i+1
                 require(
                     signedAttestors[i] != signedAttestors[j],
@@ -224,19 +229,46 @@ contract ReclaimTask is Ownable {
         }
 
         uint8 attestorThreshold = 0;
+        bool isSlashedAttestor = false;
+
         // Check if 51% of signers are expected attestors
-        for (uint256 i = 0; i < signedAttestors.length; i++) {
-            for (uint256 j = 0; j < expectedAttestors.length; j++) {
+        for (uint32 i = 0; i < signedAttestors.length; i++) {
+            for (uint32 j = 0; j < expectedAttestors.length; j++) {
                 if (signedAttestors[i] == expectedAttestors[j].addr) {
                     rewardedAttestors[rewardIndex] = expectedAttestors[j].addr;
                     rewardIndex += 1;
                     attestorThreshold += 1;
+                    isSlashedAttestor = true;
                     break;
                 }
+            }
+            if (isSlashedAttestor) {
+                slashedAttestors[slashIndex] = expectedAttestors[i].addr;
+                slashIndex += 1;
+                isSlashedAttestor = false;
             }
         }
 
         IGovernance(governanceAddress).registerRewards(rewardedAttestors);
+
+        for (uint32 i = 0; i < slashedAttestors.length; i++) {
+            address slashedAttestor = slashedAttestors[i];
+            // Slashing logic for fraudulent proof submission
+            uint256 attestorStake = IGovernance(governanceAddress)
+                .stakedAmounts(slashedAttestor);
+            if (attestorStake > 0) {
+                uint256 fradulentProofPenalityFactor = IGovernance(
+                    governanceAddress
+                ).getFradulentProofPenalityFactor();
+                uint256 slashedAmount = (attestorStake *
+                    fradulentProofPenalityFactor) / 100;
+                IGovernance(governanceAddress).slashAttestor(
+                    slashedAttestor,
+                    slashedAmount
+                );
+                emit AttestorSlashed(slashedAttestor, slashedAmount);
+            }
+        }
 
         if (attestorThreshold >= expectedAttestors.length / 2) {
             consensusReached[currentTask] = true;
