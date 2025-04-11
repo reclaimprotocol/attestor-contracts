@@ -25,11 +25,6 @@ contract Governance is Ownable {
     uint256 public verificationCost;
 
     /**
-     * @dev Indicates whether slashing is enabled.
-     */
-    bool public slashingEnabled;
-
-    /**
      * @dev The minimum stake required for Attestors.
      */
     uint256 public minimumStake;
@@ -147,14 +142,6 @@ contract Governance is Ownable {
      */
     function setVerificationCost(uint256 _verificationCost) external onlyOwner {
         verificationCost = _verificationCost;
-    }
-
-    /**
-     * @dev Sets the slashing enabled status.
-     * @param _slashingEnabled The new slashing enabled status.
-     */
-    function setSlashingEnabled(bool _slashingEnabled) external onlyOwner {
-        slashingEnabled = _slashingEnabled;
     }
 
     /**

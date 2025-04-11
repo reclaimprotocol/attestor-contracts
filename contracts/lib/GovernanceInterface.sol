@@ -26,12 +26,6 @@ interface IGovernance {
     function verificationCost() external view returns (uint256);
 
     /**
-     * @dev Returns the slashing enabled status.
-     * @return True if slashing is enabled, false otherwise.
-     */
-    function slashingEnabled() external view returns (bool);
-
-    /**
      * @dev Registers rewards to specified honest attestors based on their staked amounts.
      * @param _attestorAddresses An array of addresses to reward.
      */
