@@ -117,6 +117,7 @@ contract Governance is Ownable {
         address _address
     ) external onlyOwner {
         require(Attestors[_key] == address(0), "Attestor already exists");
+        require(stakedAmounts[_address] >= minimumStake, "No staked tokens");
         Attestors[_key] = _address;
         _attestorKeys.push(_key);
     }
@@ -226,6 +227,16 @@ contract Governance is Ownable {
         totalStaked -= staked;
 
         payable(msg.sender).transfer(staked);
+    }
+
+    /**
+     * @dev Stakes for beneficiary address.
+     * @param beneficiary The address of the beneficiary attestor.
+     */
+    function delegateStake(address beneficiary) public payable {
+        require(msg.value >= minimumStake, "Amount below minimum stake");
+        stakedAmounts[beneficiary] += msg.value;
+        totalStaked += msg.value;
     }
 
     /**

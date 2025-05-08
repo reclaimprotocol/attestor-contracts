@@ -45,6 +45,10 @@ describe('Integration', function () {
       await governance.setVerificationCost(ethers.parseEther('2.0'))
 
       await governance.setReclaimContractAddress(reclaim.getAddress())
+
+      await governance.delegateStake(attestor1.address, { value: minimumStake })
+      await governance.delegateStake(attestor2.address, { value: minimumStake })
+      await governance.delegateStake(attestor3.address, { value: minimumStake })
     })
 
     it('Should verify valid proofs', async function () {
@@ -56,6 +60,10 @@ describe('Integration', function () {
 
       proofs[0] = onChainProof
       signatures[0] = onChainProof.signedClaim.signatures[0]
+
+      await governance.delegateStake(PROOF.witnesses[0].id, {
+        value: minimumStake
+      })
       await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
 
       for (let i = 1; i < 4; i++) {
@@ -66,6 +74,7 @@ describe('Integration', function () {
           onChainProof.signedClaim.claim,
           wallet
         )
+        await governance.delegateStake(wallet.address, { value: minimumStake })
 
         await governance.addAttestor('attestor' + i, wallet.address)
       }
@@ -93,6 +102,10 @@ describe('Integration', function () {
 
       proofs[0] = onChainProof
       signatures[0] = onChainProof.signedClaim.signatures[0]
+
+      await governance.delegateStake(PROOF.witnesses[0].id, {
+        value: minimumStake
+      })
       await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
 
       for (let i = 1; i < 4; i++) {
@@ -104,6 +117,7 @@ describe('Integration', function () {
           wallet
         )
 
+        await governance.delegateStake(wallet.address, { value: minimumStake })
         await governance.addAttestor('attestor' + i, wallet.address)
       }
 
@@ -133,6 +147,10 @@ describe('Integration', function () {
 
       proofs[0] = onChainProof
       signatures[0] = onChainProof.signedClaim.signatures[0]
+
+      await governance.delegateStake(PROOF.witnesses[0].id, {
+        value: minimumStake
+      })
       await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
 
       for (let i = 1; i < 4; i++) {
@@ -141,6 +159,7 @@ describe('Integration', function () {
         const wallet = await createWallet()
         proofs[i].signedClaim.signatures[0] = FALSE_SIGNATURES[i - 1]
 
+        await governance.delegateStake(wallet.address, { value: minimumStake })
         await governance.addAttestor('attestor' + i, wallet.address)
       }
 
@@ -169,6 +188,10 @@ describe('Integration', function () {
 
       proofs[0] = onChainProof
       signatures[0] = onChainProof.signedClaim.signatures[0]
+
+      await governance.delegateStake(PROOF.witnesses[0].id, {
+        value: minimumStake
+      })
       await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
 
       for (let i = 1; i < 4; i++) {
@@ -180,6 +203,7 @@ describe('Integration', function () {
           wallet
         )
 
+        await governance.delegateStake(wallet.address, { value: minimumStake })
         await governance.addAttestor('attestor' + i, wallet.address)
       }
 

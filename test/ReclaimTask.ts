@@ -24,6 +24,9 @@ describe('Reclaim', function () {
       minimumStake,
       unbondingPeriod
     )
+    await governance.delegateStake(attestor1.address, { value: minimumStake })
+    await governance.delegateStake(attestor2.address, { value: minimumStake })
+    await governance.delegateStake(attestor3.address, { value: minimumStake })
 
     await governance.addAttestor('attestor1', attestor1.address)
     await governance.addAttestor('attestor2', attestor2.address)
