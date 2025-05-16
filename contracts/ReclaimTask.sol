@@ -229,7 +229,7 @@ contract ReclaimTask is Ownable {
         }
 
         uint8 attestorThreshold = 0;
-        bool isSlashedAttestor = false;
+        bool isSlashedAttestor = true;
 
         // Check if 51% of signers are expected attestors
         for (uint32 i = 0; i < signedAttestors.length; i++) {
@@ -238,15 +238,15 @@ contract ReclaimTask is Ownable {
                     rewardedAttestors[rewardIndex] = expectedAttestors[j].addr;
                     rewardIndex += 1;
                     attestorThreshold += 1;
-                    isSlashedAttestor = true;
+                    isSlashedAttestor = false;
                     break;
                 }
             }
             if (isSlashedAttestor) {
                 slashedAttestors[slashIndex] = expectedAttestors[i].addr;
                 slashIndex += 1;
-                isSlashedAttestor = false;
             }
+            isSlashedAttestor = true;
         }
 
         IGovernance(governanceAddress).registerRewards(rewardedAttestors);
@@ -270,7 +270,7 @@ contract ReclaimTask is Ownable {
             }
         }
 
-        if (attestorThreshold >= expectedAttestors.length / 2) {
+        if (attestorThreshold > expectedAttestors.length / 2) {
             consensusReached[currentTask] = true;
         } else {
             consensusReached[currentTask] = false;
