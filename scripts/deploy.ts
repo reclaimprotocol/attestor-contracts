@@ -48,13 +48,6 @@ const deploy = async (hre: any) => {
 
   await governance.setVerificationCost(hre.ethers.parseEther('1.0'))
 
-  await delay(5000)
-
-  await governance.addAttestor(
-    'wss://attestor.reclaimprotocol.org/ws',
-    '0x244897572368eadf65bfbc5aec98d8e5443a9072'
-  )
-
   addresses.governance = governanceAddress
   addresses.task = taskAddress
   fs.writeFileSync('scripts/addresses.json', JSON.stringify(addresses))
