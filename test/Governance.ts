@@ -41,6 +41,12 @@ describe('Governance', function () {
       ).to.be.revertedWith('Attestor already exists')
     })
 
+    it('Should revert if adding an attestor with not enough stake', async function () {
+      await expect(
+        governance.addAttestor('attestor4', attestor4.address)
+      ).to.be.revertedWith('Not enough staked tokens')
+    })
+
     it('Should remove an attestor', async function () {
       await governance.addAttestor('attestor1', attestor1.address)
       await governance.removeAttestor('attestor1')
