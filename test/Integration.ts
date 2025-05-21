@@ -179,6 +179,47 @@ describe('Integration', function () {
       expect(await reclaim.consensusReached(taskId)).to.be.false
     })
 
+    it('Should reject an invalid proof - failed consensus - edge case 50/50', async function () {
+      //@ts-ignore
+      const onChainProof = transformForOnchain(PROOF)
+
+      let proofs = []
+      let signatures = []
+
+      await reclaim.setRequiredAttestors(2)
+
+      proofs[0] = onChainProof
+      signatures[0] = onChainProof.signedClaim.signatures[0]
+
+      await governance.delegateStake(PROOF.witnesses[0].id, {
+        value: minimumStake
+      })
+      await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
+
+      proofs[1] = JSON.parse(JSON.stringify(onChainProof))
+
+      const wallet = await createWallet()
+      proofs[1].signedClaim.signatures[0] = FALSE_SIGNATURES[0]
+
+      await governance.delegateStake(wallet.address, { value: minimumStake })
+      await governance.addAttestor('attestor1', wallet.address)
+
+      const seed = ethers.randomBytes(32)
+      const timestamp = Math.floor(Date.now() / 1000)
+      await reclaim.createNewTaskRequest(seed, timestamp)
+
+      const verificationCost = await governance.verificationCost()
+
+      const taskId = await reclaim.currentTask()
+
+      await expect(
+        reclaim.verifyProofs(proofs, taskId, {
+          value: verificationCost
+        })
+      ).to.be.revertedWith('Consensus failed')
+      expect(await reclaim.consensusReached(taskId)).to.be.false
+    })
+
     it('Should reject an underpriced proof', async function () {
       //@ts-ignore
       const onChainProof = transformForOnchain(PROOF)
@@ -218,6 +259,54 @@ describe('Integration', function () {
           value: ethers.parseEther('1.0')
         })
       ).to.be.revertedWith('Verification underpriced')
+    })
+
+    it('Should reject repeated tasks', async function () {
+      //@ts-ignore
+      const onChainProof = transformForOnchain(PROOF)
+
+      let proofs = []
+      let signatures = []
+
+      proofs[0] = onChainProof
+      signatures[0] = onChainProof.signedClaim.signatures[0]
+
+      await governance.delegateStake(PROOF.witnesses[0].id, {
+        value: minimumStake
+      })
+      await governance.addAttestor('reclaim-attestor', PROOF.witnesses[0].id)
+
+      for (let i = 1; i < 4; i++) {
+        proofs[i] = JSON.parse(JSON.stringify(onChainProof))
+
+        const wallet = await createWallet()
+        proofs[i].signedClaim.signatures[0] = await signClaim(
+          onChainProof.signedClaim.claim,
+          wallet
+        )
+        await governance.delegateStake(wallet.address, { value: minimumStake })
+
+        await governance.addAttestor('attestor' + i, wallet.address)
+      }
+
+      const seed = ethers.randomBytes(32)
+      const timestamp = Math.floor(Date.now() / 1000)
+      await reclaim.createNewTaskRequest(seed, timestamp)
+
+      const verificationCost = await governance.verificationCost()
+
+      const taskId = await reclaim.currentTask()
+
+      await reclaim.verifyProofs(proofs, taskId, {
+        value: verificationCost
+      })
+      expect(await reclaim.consensusReached(taskId)).to.be.true
+
+      await expect(
+        reclaim.verifyProofs(proofs, taskId, {
+          value: verificationCost
+        })
+      ).to.be.revertedWith('Task already processed')
     })
   })
 

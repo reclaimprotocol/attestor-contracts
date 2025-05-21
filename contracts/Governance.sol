@@ -117,7 +117,10 @@ contract Governance is Ownable {
         address _address
     ) external onlyOwner {
         require(Attestors[_key] == address(0), "Attestor already exists");
-        require(stakedAmounts[_address] >= minimumStake, "No staked tokens");
+        require(
+            stakedAmounts[_address] >= minimumStake,
+            "Not enough staked tokens"
+        );
         Attestors[_key] = _address;
         _attestorKeys.push(_key);
     }
