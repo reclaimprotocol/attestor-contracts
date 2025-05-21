@@ -182,6 +182,7 @@ contract ReclaimTask is Ownable {
         Proof[] memory proofs,
         uint32 taskId
     ) public payable returns (bool) {
+        require(consensusReached[taskId] == false, "Task already processed");
         uint256 verificationCost = IGovernance(governanceAddress)
             .verificationCost();
         require(msg.value == verificationCost, "Verification underpriced");
