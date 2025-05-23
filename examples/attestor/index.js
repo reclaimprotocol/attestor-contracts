@@ -163,6 +163,7 @@ const createClaim = async () => {
       'Proofs verified on-chain successfully, Here is Transaction Hash:',
       tx1.hash
     )
+    process.exit(0)
   } catch (error) {
     console.log(error)
   }
