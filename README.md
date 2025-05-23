@@ -62,6 +62,12 @@ Stake an amount
 npx hardhat stake --amount $YOUR_AMOUNT --network $YOUR_NETWORK
 ```
 
+Delegate-stake an amount
+
+```shell
+npx hardhat stake --address $BENIFICIARY_ADDRESS --amount $YOUR_AMOUNT --network $YOUR_NETWORK
+```
+
 Request unstaking
 
 ```shell
