@@ -26,6 +26,21 @@ const config: HardhatUserConfig = {
         runs: 200
       }
     }
+  },
+  etherscan: {
+    apiKey: {
+      'mechain-testnet': 'empty'
+    },
+    customChains: [
+      {
+        network: 'mechain-testnet',
+        chainId: 5151,
+        urls: {
+          apiURL: 'https://testnet-scan.mechain.tech/api',
+          browserURL: 'https://testnet-scan.mechain.tech'
+        }
+      }
+    ]
   }
 }
 

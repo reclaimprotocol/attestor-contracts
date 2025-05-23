@@ -5,7 +5,7 @@ const delay = (ms: number | undefined) =>
   new Promise((res) => setTimeout(res, ms))
 
 const deploy = async (hre: any) => {
-  const minimumStake = hre.ethers.parseEther('10')
+  const minimumStake = hre.ethers.parseEther('5')
   const unbondingPeriod = 10
   let addresses = {
     governance: '',
