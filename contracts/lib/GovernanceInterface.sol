@@ -26,6 +26,12 @@ interface IGovernance {
     function verificationCost() external view returns (uint256);
 
     /**
+     * @dev Returns the minimum staking requirement, in wei.
+     * @return The minimum stake limit.
+     */
+    function minimumStake() external view returns (uint256);
+
+    /**
      * @dev Registers rewards to specified honest attestors based on their staked amounts.
      * @param _attestorAddresses An array of addresses to reward.
      */

@@ -143,10 +143,38 @@ contract ReclaimTask is Ownable {
         ).getAttestors();
 
         uint256 length = keys.length;
-        Attestor[] memory governanceAttestors = new Attestor[](length);
+        uint attestorCount = 0;
+
+        address[] memory taskAttestorAddresses = new address[](length);
+
+        string[] memory taskAttestorKeys = new string[](length);
+
+        uint256 attestorStake;
 
         for (uint256 i = 0; i < length; i++) {
-            governanceAttestors[i] = Attestor(addresses[i], keys[i]);
+            attestorStake = IGovernance(governanceAddress).stakedAmounts(
+                addresses[i]
+            );
+            if (
+                attestorStake >= IGovernance(governanceAddress).minimumStake()
+            ) {
+                taskAttestorAddresses[attestorCount] = addresses[i];
+                taskAttestorKeys[attestorCount] = keys[i];
+                attestorCount += 1;
+            }
+        }
+
+        Attestor[] memory governanceAttestors = new Attestor[](attestorCount);
+
+        for (uint256 i = 0; i < attestorCount; i++) {
+            governanceAttestors[i] = Attestor(
+                taskAttestorAddresses[i],
+                taskAttestorKeys[i]
+            );
+        }
+
+        if (governanceAttestors.length < requiredAttestors) {
+            revert("Not enough positive-stake attestors");
         }
 
         Attestor[] memory attestorsLeftList = governanceAttestors;
@@ -289,17 +317,6 @@ contract ReclaimTask is Ownable {
         bytes32 seed,
         uint32 timestamp
     ) public returns (uint32, Attestor[] memory) {
-        (string[] memory keys, address[] memory addresses) = IGovernance(
-            governanceAddress
-        ).getAttestors();
-
-        uint256 length = keys.length;
-        Attestor[] memory governanceAttestors = new Attestor[](length);
-
-        for (uint256 i = 0; i < length; i++) {
-            governanceAttestors[i] = Attestor(addresses[i], keys[i]);
-        }
-
         Attestor[] memory attestors = fetchAttestorsForClaim(seed, timestamp);
         addNewTask(attestors);
 
