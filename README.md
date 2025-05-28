@@ -134,6 +134,12 @@ Slash
 npx hardhat slash --amount $YOUR_AMOUNT --network $YOUR_NETWORK
 ```
 
+Slash attestor
+
+```shell
+npx hardhat slash-attestor --address $ATTESTOR_ADDRESS --amount $YOUR_AMOUNT --network $YOUR_NETWORK
+```
+
 Get total staked
 
 ```shell
