@@ -108,6 +108,32 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "delegateStake",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "fradulentProofPenalityFactor",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_key",
         "type": "string"
@@ -137,6 +163,19 @@
         "internalType": "address[]",
         "name": "addresses",
         "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getFradulentProofPenalityFactor",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -244,6 +283,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_fradulentProofPenalityFactor",
+        "type": "uint256"
+      }
+    ],
+    "name": "setFradulentProofPenalityFactor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_minimumStake",
         "type": "uint256"
       }
@@ -262,19 +314,6 @@
       }
     ],
     "name": "setReclaimContractAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "_slashingEnabled",
-        "type": "bool"
-      }
-    ],
-    "name": "setSlashingEnabled",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -319,16 +358,21 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "slashingEnabled",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "internalType": "address",
+        "name": "_attestor",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "name": "slashAttestor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -1,6 +1,10 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 
-const unstake = async (hre: HardhatRuntimeEnvironment) => {
+const delegateStake = async (
+  address: string,
+  amount: number,
+  hre: HardhatRuntimeEnvironment
+) => {
   const addresses = require('./addresses.json')
   const governanceAddress = addresses.governance
 
@@ -19,12 +23,12 @@ const unstake = async (hre: HardhatRuntimeEnvironment) => {
 
   try {
     //@ts-ignore
-    const result = await contract.unstake()
+    const result = await contract.delegateStake(address, { value: amount })
     console.log(result)
   } catch (error) {
     console.error('Error calling contract:', error)
   }
 
-  console.log(`Unstaked!`)
+  console.log(`${amount} is staked!`)
 }
-export default unstake
+export default delegateStake
