@@ -19,12 +19,12 @@ const unstake = async (hre: HardhatRuntimeEnvironment) => {
 
   try {
     //@ts-ignore
-    const result = await contract.requestUnstake()
+    const result = await contract.unstake()
     console.log(result)
   } catch (error) {
     console.error('Error calling contract:', error)
   }
 
-  console.log(`Unstaking is requested!`)
+  console.log(`Unstaked!`)
 }
 export default unstake
