@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/reclaimprotocol/attestor-contracts#readme",
   "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.12",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.2.0",
     "@types/chai": "^4.3.20",
