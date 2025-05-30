@@ -136,10 +136,14 @@ contract Governance is Ownable {
         // Remove key from array while maintaining order
         for (uint256 i = 0; i < _attestorKeys.length; i++) {
             if (keccak256(bytes(_attestorKeys[i])) == keccak256(bytes(_key))) {
-                // Shift the last element to the current position and then pop the last element.
+                // Shift the current element to the last position and then pop the last element.
                 // This avoids gaps in the array and maintains order.
                 if (i < _attestorKeys.length - 1) {
-                    _attestorKeys[i] = _attestorKeys[_attestorKeys.length - 1];
+                    for (uint256 j = i; j < _attestorKeys.length - 1; j++) {
+                        string memory temp = _attestorKeys[j];
+                        _attestorKeys[j] = _attestorKeys[j + 1];
+                        _attestorKeys[j + 1] = temp;
+                    }
                 }
                 _attestorKeys.pop();
                 break;
@@ -253,7 +257,7 @@ contract Governance is Ownable {
     ) external OnlyAuthorized {
         require(
             stakedAmounts[_attestor] >= _amount,
-            "Slash amount exceeds attestor's stake"
+            "Slash amount exceeds attestor stake"
         );
         stakedAmounts[_attestor] -= _amount;
         totalStaked -= _amount;
@@ -308,6 +312,11 @@ contract Governance is Ownable {
     function withdraw() public onlyOwner {
         payable(owner()).transfer(address(this).balance);
     }
+
+    /**
+     * @dev Receives tokens.
+     */
+    receive() external payable {}
 
     /**
      * @dev Returns the address of an Attestor given their key.
