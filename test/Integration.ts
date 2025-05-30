@@ -100,7 +100,7 @@ describe('Integration', function () {
       const { proofs } = await setupAttestors(4)
       const taskId = await createTask()
 
-      const tx = reclaim.verifyProofs(proofs, taskId, {
+      const tx = await reclaim.verifyProofs(proofs, taskId, {
         value: verificationCost
       })
 
@@ -275,7 +275,7 @@ describe('Integration', function () {
 
       // Verify attestor stake was reduced
       const finalStake = await governance.stakedAmounts(attestors[3])
-      expect(finalStake).to.be.lt(initialStakes[1])
+      expect(finalStake).to.be.lt(initialStakes[3])
 
       // Verify other attestors remain untouched
       for (let i = 0; i < 3; i++) {
