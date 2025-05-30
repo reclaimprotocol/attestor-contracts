@@ -19,8 +19,7 @@ const slash = async (amount: number, hre: HardhatRuntimeEnvironment) => {
 
   try {
     //@ts-ignore
-    const result = await contract.slash(amount)
-    console.log(result)
+    await contract.slash(amount)
   } catch (error) {
     console.error('Error calling contract:', error)
   }

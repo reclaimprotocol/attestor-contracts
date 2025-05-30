@@ -19,8 +19,7 @@ const stake = async (amount: number, hre: HardhatRuntimeEnvironment) => {
 
   try {
     //@ts-ignore
-    const result = await contract.stake({ value: amount })
-    console.log(result)
+    await contract.stake({ value: amount })
   } catch (error) {
     console.error('Error calling contract:', error)
   }

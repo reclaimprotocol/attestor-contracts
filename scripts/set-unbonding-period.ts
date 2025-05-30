@@ -22,8 +22,7 @@ const setUnbondingPeriod = async (
 
   try {
     //@ts-ignore
-    const result = await contract.setUnbondingPeriod(amount)
-    console.log(result)
+    await contract.setUnbondingPeriod(amount)
   } catch (error) {
     console.error('Error calling contract:', error)
   }

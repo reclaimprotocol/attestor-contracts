@@ -22,8 +22,7 @@ const setMinimumStake = async (
 
   try {
     //@ts-ignore
-    const result = await contract.setMinimumStake(amount)
-    console.log(result)
+    await contract.setMinimumStake(amount)
   } catch (error) {
     console.error('Error calling contract:', error)
   }

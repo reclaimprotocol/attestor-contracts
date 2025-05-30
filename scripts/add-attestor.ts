@@ -23,8 +23,7 @@ const addAttestor = async (
 
   try {
     //@ts-ignore
-    const result = await contract.addAttestor(host, address)
-    console.log(result)
+    await contract.addAttestor(host, address)
   } catch (error) {
     console.error('Error calling contract:', error)
   }

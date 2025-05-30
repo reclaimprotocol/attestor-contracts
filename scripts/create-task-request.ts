@@ -21,9 +21,7 @@ const createTaskRequest = async (hre: HardhatRuntimeEnvironment) => {
     const seed = hre.ethers.randomBytes(32)
     const timestamp = Math.floor(Date.now() / 1000)
     //@ts-ignore
-    const tx = await contract.createNewTaskRequest(seed, timestamp)
-
-    console.log(tx)
+    await contract.createNewTaskRequest(seed, timestamp)
   } catch (error) {
     console.error('Error calling contract:', error)
   }
