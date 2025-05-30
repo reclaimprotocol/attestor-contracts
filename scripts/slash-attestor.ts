@@ -23,8 +23,7 @@ const slashAttestor = async (
 
   try {
     //@ts-ignore
-    const result = await contract.slashAttestor(address, amount)
-    console.log(result)
+    await contract.slashAttestor(address, amount)
   } catch (error) {
     console.error('Error calling contract:', error)
   }

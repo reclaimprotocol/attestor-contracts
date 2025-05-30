@@ -19,8 +19,7 @@ const removeAttestor = async (host: string, hre: HardhatRuntimeEnvironment) => {
 
   try {
     //@ts-ignore
-    const result = await contract.removeAttestor(host)
-    console.log(result)
+    await contract.removeAttestor(host)
   } catch (error) {
     console.error('Error calling contract:', error)
   }

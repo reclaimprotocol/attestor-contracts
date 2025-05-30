@@ -19,8 +19,7 @@ const unstake = async (hre: HardhatRuntimeEnvironment) => {
 
   try {
     //@ts-ignore
-    const result = await contract.unstake()
-    console.log(result)
+    await contract.unstake()
   } catch (error) {
     console.error('Error calling contract:', error)
   }

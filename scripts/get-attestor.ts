@@ -20,7 +20,6 @@ const getAttestor = async (host: string, hre: HardhatRuntimeEnvironment) => {
   try {
     //@ts-ignore
     const result = await contract.getAttestor(host)
-    console.log(result)
   } catch (error) {
     console.error('Error calling contract:', error)
   }

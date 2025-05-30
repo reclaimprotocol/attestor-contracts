@@ -22,8 +22,7 @@ const setRequiredAttestors = async (
 
   try {
     //@ts-ignore
-    const result = await contract.setRequiredAttestors(amount)
-    console.log(result)
+    await contract.setRequiredAttestors(amount)
   } catch (error) {
     console.error('Error calling contract:', error)
   }

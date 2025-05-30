@@ -19,8 +19,7 @@ const withdraw = async (hre: HardhatRuntimeEnvironment) => {
 
   try {
     //@ts-ignore
-    const result = await contract.withdraw()
-    console.log(result)
+    await contract.withdraw()
   } catch (error) {
     console.error('Error calling contract:', error)
   }

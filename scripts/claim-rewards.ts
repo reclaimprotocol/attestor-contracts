@@ -19,8 +19,7 @@ const claimRewards = async (hre: HardhatRuntimeEnvironment) => {
 
   try {
     //@ts-ignore
-    const result = await contract.claimRewards()
-    console.log(result)
+    await contract.claimRewards()
   } catch (error) {
     console.error('Error calling contract:', error)
   }
