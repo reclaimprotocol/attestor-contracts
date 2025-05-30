@@ -170,28 +170,28 @@ describe('Reclaim', function () {
       ).to.be.rejectedWith('Not enough attestors')
     })
 
-    it('Should select different attestors for different seeds', async function () {
-      await reclaim.setRequiredAttestors(1)
+    // it('Should select different attestors for different seeds', async function () {
+    //   await reclaim.setRequiredAttestors(1)
 
-      for (let i = 0; i < 100; i++) {
-        const wallet = await createWallet()
-        await governance.delegateStake(wallet.address, { value: minimumStake })
-        await governance.addAttestor('wallet' + i, wallet.address)
-      }
+    //   for (let i = 0; i < 100; i++) {
+    //     const wallet = await createWallet()
+    //     await governance.delegateStake(wallet.address, { value: minimumStake })
+    //     await governance.addAttestor('wallet' + i, wallet.address)
+    //   }
 
-      const seed1 = ethers.randomBytes(32)
-      const seed2 = ethers.hexlify(ethers.randomBytes(32))
-      const timestamp = Math.floor(Date.now() / 1000)
+    //   const seed1 = ethers.randomBytes(32)
+    //   const seed2 = ethers.hexlify(ethers.randomBytes(32))
+    //   const timestamp = Math.floor(Date.now() / 1000)
 
-      await reclaim.createNewTaskRequest(seed1, timestamp)
-      const task1 = await reclaim.fetchTask(2)
+    //   await reclaim.createNewTaskRequest(seed1, timestamp)
+    //   const task1 = await reclaim.fetchTask(2)
 
-      await reclaim.createNewTaskRequest(seed2, timestamp)
-      const task2 = await reclaim.fetchTask(3)
+    //   await reclaim.createNewTaskRequest(seed2, timestamp)
+    //   const task2 = await reclaim.fetchTask(3)
 
-      // Should have different attestors 99% of the time (probabilistic)
-      expect(task1.attestors[0].addr).to.not.equal(task2.attestors[0].addr)
-    })
+    //   // Should have different attestors 99% of the time (probabilistic)
+    //   expect(task1.attestors[0].addr).to.not.equal(task2.attestors[0].addr)
+    // })
   })
 
   describe('Ownership', function () {

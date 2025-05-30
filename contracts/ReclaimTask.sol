@@ -261,10 +261,11 @@ contract ReclaimTask is Ownable {
         bool isSlashedAttestor = true;
 
         // Check if 51% of signers are expected attestors
-        for (uint32 i = 0; i < signedAttestors.length; i++) {
-            for (uint32 j = 0; j < expectedAttestors.length; j++) {
-                if (signedAttestors[i] == expectedAttestors[j].addr) {
-                    rewardedAttestors[rewardIndex] = expectedAttestors[j].addr;
+        for (uint32 i = 0; i < expectedAttestors.length; i++) {
+            address expectedAttestor = expectedAttestors[i].addr;
+            for (uint32 j = 0; j < signedAttestors.length; j++) {
+                if (expectedAttestor == signedAttestors[j]) {
+                    rewardedAttestors[rewardIndex] = signedAttestors[j];
                     rewardIndex += 1;
                     attestorThreshold += 1;
                     isSlashedAttestor = false;
@@ -272,7 +273,7 @@ contract ReclaimTask is Ownable {
                 }
             }
             if (isSlashedAttestor) {
-                slashedAttestors[slashIndex] = expectedAttestors[i].addr;
+                slashedAttestors[slashIndex] = expectedAttestor;
                 slashIndex += 1;
             }
             isSlashedAttestor = true;
