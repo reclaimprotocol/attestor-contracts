@@ -174,7 +174,7 @@ contract ReclaimTask is Ownable {
         }
 
         if (governanceAttestors.length < requiredAttestors) {
-            revert("Not enough positive-stake attestors");
+            revert("Not enough attestors");
         }
 
         Attestor[] memory attestorsLeftList = governanceAttestors;
