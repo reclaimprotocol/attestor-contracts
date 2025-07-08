@@ -10,8 +10,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@reclaimprotocol/js-sdk": "^2.1.1",
-    "@reclaimprotocol/zk-fetch": "^0.3.1",
+    "@reclaimprotocol/js-sdk": "^4.2.3",
+    "@reclaimprotocol/zk-fetch": "^0.4.0",
     "dotenv": "^16.4.5",
     "ethers": "5.7",
     "js-base64": "^3.7.7"
