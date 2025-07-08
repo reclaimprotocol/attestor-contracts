@@ -30,8 +30,8 @@ async function generateProof() {
   const url =
     'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'
 
-  // Generate the proof
-  const proof = await reclaimClient.zkFetch(
+  // Generate proofs
+  const proofs = await reclaimClient.zkFetch(
     url,
     { method: 'GET' },
     {
@@ -41,26 +41,18 @@ async function generateProof() {
           value: '\\{"ethereum":\\{"usd":(?<price>[\\d\\.]+)\\}\\}'
         }
       ]
-    }
+    },
+    // The isDecentralised option
+    true
   )
 
-  if (!proof) {
+  if (!proofs) {
     console.log('Failed to generate proof')
     return
   }
 
-  const proofData = await transformForOnchain(proof)
-  console.log('Proof:', proofData)
+  const proofData = await proofs.map(transformForOnchain)
   return proofData
-}
-
-async function createTaskRequest() {
-  const seed = ethers.utils.randomBytes(32)
-  const timestamp = Math.floor(Date.now() / 1000)
-  const taskContract = await getTaskContract()
-
-  const tx = await taskContract.createNewTaskRequest(seed, timestamp)
-  await tx.wait()
 }
 
 async function getTaskContract() {
@@ -92,13 +84,13 @@ async function verifyProof() {
     const proofData = await generateProof()
     const taskContract = await getTaskContract()
     const governanceContract = await getGovernanceContract()
-    await createTaskRequest()
+
     const verificationCost = await governanceContract.verificationCost()
     const currentTask = await taskContract.currentTask()
 
     console.log('Verifying for task ID ', currentTask)
 
-    const tx = await taskContract.verifyProof(proofData, currentTask, {
+    const tx = await taskContract.verifyProofs(proofData, currentTask, {
       value: verificationCost
     })
 
